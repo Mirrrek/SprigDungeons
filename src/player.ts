@@ -6,6 +6,7 @@ export default class Player {
     private y: number;
 
     private direction: Direction;
+    private lastShot: number = 0;
 
     onEnterLevel: ((direction: Direction) => void) | null = null;
 
@@ -18,6 +19,21 @@ export default class Player {
     render(time: number): void {
         const step = Math.floor(time / 500) % 2 === 0 ? '0' : '1';
         addSprite(this.x, this.y, getSprite(`player-${step}-${this.direction}`));
+
+        if (Date.now() - this.lastShot < 100) {
+            addSprite(this.x + (this.direction === 'east' ? 1 : this.direction === 'west' ? -1 : 0),
+                this.y + (this.direction === 'south' ? 1 : this.direction === 'north' ? -1 : 0),
+                getSprite(`muzzle-flash-${this.direction}`));
+            for (let i = 0; i < 10; i++) {
+                if (this.direction === 'north' && this.y - 2 - i < 1) break;
+                if (this.direction === 'south' && this.y + 2 + i >= screenHeight - 1) break;
+                if (this.direction === 'west' && this.x - 2 - i < 1) break;
+                if (this.direction === 'east' && this.x + 2 + i >= screenWidth - 1) break;
+                addSprite(this.x + (this.direction === 'east' ? 2 + i : this.direction === 'west' ? -2 - i : 0),
+                    this.y + (this.direction === 'south' ? 2 + i : this.direction === 'north' ? -2 - i : 0),
+                    getSprite(`bullet-path-${i === 0 ? '0' : i === 1 ? '1' : '2'}-${this.direction}`));
+            }
+        }
     }
 
     move(x: number, y: number): void {
@@ -76,5 +92,6 @@ export default class Player {
 
     shoot(direction: Direction): void {
         this.direction = direction;
+        this.lastShot = Date.now();
     }
 }
