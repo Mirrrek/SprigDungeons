@@ -1,0 +1,15 @@
+{
+    "name": "sprig-dungeons",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "build": "tsc",
+        "dev": "tsc -w"
+    },
+    "author": "Marc Sportiello",
+    "license": "ISC",
+    "devDependencies": {
+        "typescript": "^5.5.3"
+    }
+}
