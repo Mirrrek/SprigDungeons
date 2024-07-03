@@ -10,12 +10,14 @@ const player = new Player();
 
 const spawn = new Level(null);
 spawn.generateChildLevels();
-spawn.state = 'conquered';
+spawn.skipFight();
 
 let currentLevel = spawn;
 
+let levelsConquered = 0;
+
 player.onEnterLevel = (direction) => {
-    if (currentLevel.state !== 'conquered') {
+    if (currentLevel.getState() !== 'conquered') {
         return;
     }
 
@@ -39,9 +41,9 @@ player.onEnterLevel = (direction) => {
             player.setX(1);
             break;
     }
-    if (currentLevel.state === 'waiting') {
+    if (currentLevel.getState() === 'waiting') {
         currentLevel.generateChildLevels();
-        currentLevel.state = 'conquered';
+        currentLevel.startFight();
     }
 }
 
@@ -49,7 +51,7 @@ function loop(time: number): void {
     if (inMenu) {
         getAll().forEach((sprite) => sprite.remove());
         clearText();
-        currentLevel.render();
+        currentLevel.render(time);
         for (let y = 0; y < 5; y++) {
             for (let x = 0; x < 11; x++) {
                 let sprite = getSprite('menu-background');
@@ -92,21 +94,24 @@ function loop(time: number): void {
 
     // Shooting
     if (input.secondary.up() && !input.secondary.left() && !input.secondary.down() && !input.secondary.right()) {
-        player.shoot('north');
+        player.shoot('north', currentLevel.getEnemies());
     }
     if (!input.secondary.up() && input.secondary.left() && !input.secondary.down() && !input.secondary.right()) {
-        player.shoot('west');
+        player.shoot('west', currentLevel.getEnemies());
     }
     if (!input.secondary.up() && !input.secondary.left() && input.secondary.down() && !input.secondary.right()) {
-        player.shoot('south');
+        player.shoot('south', currentLevel.getEnemies());
     }
     if (!input.secondary.up() && !input.secondary.left() && !input.secondary.down() && input.secondary.right()) {
-        player.shoot('east');
+        player.shoot('east', currentLevel.getEnemies());
     }
+
+    // Update
+    currentLevel.update(player.getPosition(), levelsConquered);
 
     // Rendering
     getAll().forEach((sprite) => sprite.remove());
-    currentLevel.render();
+    currentLevel.render(time);
     player.render(time);
 }
 

@@ -1,5 +1,6 @@
 import { screenWidth, screenHeight, doorWidth, Direction } from '@/constants';
 import getSprite from '@/sprites';
+import Enemy from '@/enemy';
 
 export default class Player {
     private x: number;
@@ -90,8 +91,46 @@ export default class Player {
         }
     }
 
-    shoot(direction: Direction): void {
+    shoot(direction: Direction, enemies: Enemy[]): number {
         this.direction = direction;
         this.lastShot = Date.now();
+
+        let enemiesHit = 0;
+
+        enemies.forEach((enemy) => {
+            const enemyPosition = enemy.getPosition();
+            switch (direction) {
+                case 'north':
+                    if (enemyPosition.x === this.x && enemyPosition.y <= this.y) {
+                        enemiesHit++;
+                        enemy.die();
+                    }
+                    break;
+                case 'south':
+                    if (enemyPosition.x === this.x && enemyPosition.y >= this.y) {
+                        enemiesHit++;
+                        enemy.die();
+                    }
+                    break;
+                case 'west':
+                    if (enemyPosition.y === this.y && enemyPosition.x <= this.x) {
+                        enemiesHit++;
+                        enemy.die();
+                    }
+                    break;
+                case 'east':
+                    if (enemyPosition.y === this.y && enemyPosition.x >= this.x) {
+                        enemiesHit++;
+                        enemy.die();
+                    }
+                    break;
+            }
+        });
+
+        return enemiesHit;
+    }
+
+    getPosition(): { x: number, y: number } {
+        return { x: this.x, y: this.y };
     }
 }

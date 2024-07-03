@@ -1,8 +1,9 @@
-import getSprite from '@/sprites';
 import { screenWidth, screenHeight, doorWidth, Direction } from '@/constants';
+import getSprite from '@/sprites';
+import Enemy from '@/enemy';
 
 export default class Level {
-    state: 'waiting' | 'active' | 'conquered';
+    private state: 'waiting' | 'active' | 'conquered';
 
     private readonly previousLevel: { level: Level, direction: Exclude<Direction, 'east'> } | null;
 
@@ -11,6 +12,12 @@ export default class Level {
     private southLevel: Level | null;
 
     private readonly map: string;
+
+    private readonly enemies: [Enemy[], Enemy[], Enemy[]];
+    private currentWave: 0 | 1 | 2;
+    private newWaveTime: number;
+
+    onLevelConquered: (() => void) | null = null;
 
     constructor(previousLevel: { level: Level, direction: Exclude<Direction, 'east'> } | null) {
         this.previousLevel = previousLevel;
@@ -28,6 +35,14 @@ export default class Level {
                 this.map += getSprite(Math.random() < 0.25 ? 'level-floor-1' : 'level-floor-0');
             }
         }
+
+        this.enemies = [
+            new Array(3).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)])),
+            new Array(5).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)])),
+            new Array(7).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)]))
+        ];
+        this.currentWave = 0;
+        this.newWaveTime = 0;
     }
 
     generateChildLevels(): void {
@@ -71,6 +86,40 @@ export default class Level {
         }
     }
 
+    skipFight(): void {
+        this.state = 'conquered';
+    }
+
+    startFight(): void {
+        this.state = 'active';
+        this.enemies[0].forEach((enemy) => enemy.spawn());
+    }
+
+    update(playerPosition: { x: number, y: number }, levelsConquered: number): void {
+        if (this.state !== 'active') {
+            return;
+        }
+
+        if (this.enemies[this.currentWave].every((enemy) => enemy.isDead())) {
+            if (this.newWaveTime === 0) {
+                if (this.currentWave === 2) {
+                    this.state = 'conquered';
+                    if (this.onLevelConquered !== null) {
+                        this.onLevelConquered();
+                    }
+                } else {
+                    this.newWaveTime = Date.now();
+                }
+            } else if (Date.now() - this.newWaveTime > 1500) {
+                this.newWaveTime = 0;
+                this.currentWave++;
+                this.enemies[this.currentWave].forEach((enemy) => enemy.spawn());
+            }
+        }
+
+        this.enemies.forEach((wave) => wave.forEach((enemy) => enemy.update(playerPosition, levelsConquered)));
+    }
+
     getLevel(direction: Direction): Level | null {
         if (direction === this.previousLevel?.direction) {
             return this.previousLevel.level;
@@ -84,7 +133,7 @@ export default class Level {
         }
     }
 
-    render(): void {
+    render(time: number): void {
         setMap(this.map);
 
         for (let x = 0; x < screenWidth; x++) {
@@ -119,6 +168,8 @@ export default class Level {
         if (this.southLevel !== null) {
             this.renderDoor('south', this.state === 'conquered');
         }
+
+        this.enemies.forEach((wave) => wave.forEach((enemy) => enemy.render(time)));
     }
 
     private renderDoor(direction: Direction, open: boolean): void {
@@ -160,5 +211,13 @@ export default class Level {
                 }
             } break;
         }
+    }
+
+    getState(): 'waiting' | 'active' | 'conquered' {
+        return this.state;
+    }
+
+    getEnemies(): Enemy[] {
+        return this.enemies[this.currentWave].filter((enemy) => !enemy.isDead());
     }
 }
