@@ -1,4 +1,57 @@
 const sprites = [
+    ...generateRotatedSprites('menu-background-edge', `
+2222222222222222
+2222222222222222
+2222222222222222
+2222222222222222
+2222222222222222
+2222222222222222
+2222222222222222
+2222222222222222
+2222222222222222
+2222222222222222
+2222222222222222
+2222222222222222
+2222222222222222
+LLLLLLLLLLLLLLLL
+0000000000000000
+0000000000000000`),
+    ...generateRotatedSprites('menu-background-corner', `
+2222222222222L00
+2222222222222L00
+2222222222222L00
+2222222222222L00
+2222222222222L00
+2222222222222L00
+2222222222222L00
+2222222222222L00
+222222222222L000
+222222222222L000
+222222222222L000
+22222222222L000.
+22222222LLL0000.
+LLLLLLLL0000000.
+00000000000000..
+00000000000.....`),
+    {
+        name: 'menu-background', bitmap: `
+2222222222222222
+2222222222222222
+2222222222222222
+2222222222222222
+2222222222222222
+2222222222222222
+2222222222222222
+2222222222222222
+2222222222222222
+2222222222222222
+2222222222222222
+2222222222222222
+2222222222222222
+2222222222222222
+2222222222222222
+2222222222222222`
+    },
     ...generateYMirrorSprites('player-0', `
 ....00000000....
 ...0666666660...
@@ -241,13 +294,14 @@ function rotateBitmap(bitmap: string, rotations: number): string {
     return rotatedLines.map(line => line.join('')).join('\n');
 }
 
+const spriteTypeChars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
 const spriteTypes: { [key in typeof sprites[number]['name']]: Sprig.SpriteType } = sprites.reduce((acc, sprite, i) => {
-    const char = String.fromCharCode(97 + i);
-    if (!/^[a-z]$/.test(char)) {
+    if (i >= spriteTypeChars.length) {
         throw new Error('Too many sprites');
     }
 
-    acc[sprite.name] = char;
+    acc[sprite.name] = spriteTypeChars[i];
     return acc;
 }, {} as any);
 
