@@ -24,23 +24,29 @@ export default class Level {
         for (let y = 0; y < screenHeight; y++) {
             this.map += '\n';
             for (let x = 0; x < screenWidth; x++) {
-                if (x === 0) {
-                    this.map += getSprite(y === 0 ? 'level-floor-corner-south' : y === screenHeight - 1 ? 'level-floor-corner-east' : 'level-floor-edge-east');
-                } else if (x === screenWidth - 1) {
-                    this.map += getSprite(y === 0 ? 'level-floor-corner-west' : y === screenHeight - 1 ? 'level-floor-corner-north' : 'level-floor-edge-west');
-                } else if (y === 0) {
-                    this.map += getSprite('level-floor-edge-south');
-                } else if (y === screenHeight - 1) {
-                    this.map += getSprite('level-floor-edge-north');
-                } else {
-                    this.map += getSprite(Math.random() < 0.25 ? 'level-floor-1' : 'level-floor-0');
-                }
+                this.map += getSprite(Math.random() < 0.25 ? 'level-floor-1' : 'level-floor-0');
             }
         }
     }
 
     render(locked: boolean) {
         setMap(this.map);
+        for (let x = 0; x < screenWidth; x++) {
+            if (x === 0) {
+                addSprite(x, 0, getSprite('level-floor-corner-south'));
+                addSprite(x, screenHeight - 1, getSprite('level-floor-corner-east'));
+            } else if (x === screenWidth - 1) {
+                addSprite(x, 0, getSprite('level-floor-corner-west'));
+                addSprite(x, screenHeight - 1, getSprite('level-floor-corner-north'));
+            } else {
+                addSprite(x, 0, getSprite('level-floor-edge-south'));
+                addSprite(x, screenHeight - 1, getSprite('level-floor-edge-north'));
+            }
+        }
+        for (let y = 1; y < screenHeight - 1; y++) {
+            addSprite(0, y, getSprite('level-floor-edge-east'));
+            addSprite(screenWidth - 1, y, getSprite('level-floor-edge-west'));
+        }
         switch (this.previousLevelDirection) {
             case 'up': {
                 const doorPosition = Math.floor(screenWidth / 2 - doorWidth / 2);
