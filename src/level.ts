@@ -1,6 +1,7 @@
 import { screenWidth, screenHeight, doorWidth, Direction } from '@/constants';
 import getSprite from '@/sprites';
 import Enemy from '@/enemy';
+import play from '@/audio';
 
 export default class Level {
     private state: 'waiting' | 'active' | 'conquered';
@@ -17,7 +18,7 @@ export default class Level {
     private currentWave: 0 | 1 | 2;
     private newWaveTime: number;
 
-    onLevelConquered: (() => void) | null = null;
+    private onLevelConquered: (() => void) | null = null;
 
     constructor(previousLevel: { level: Level, direction: Exclude<Direction, 'east'> } | null) {
         this.previousLevel = previousLevel;
@@ -90,9 +91,11 @@ export default class Level {
         this.state = 'conquered';
     }
 
-    startFight(): void {
+    startFight(onLevelConquered: () => void): void {
+        this.onLevelConquered = onLevelConquered;
         this.state = 'active';
         this.enemies[0].forEach((enemy) => enemy.spawn());
+        play('level-start');
     }
 
     update(playerPosition: { x: number, y: number }, levelsConquered: number): void {
@@ -104,6 +107,7 @@ export default class Level {
             if (this.newWaveTime === 0) {
                 if (this.currentWave === 2) {
                     this.state = 'conquered';
+                    play('level-cleared');
                     if (this.onLevelConquered !== null) {
                         this.onLevelConquered();
                     }
@@ -114,6 +118,7 @@ export default class Level {
                 this.newWaveTime = 0;
                 this.currentWave++;
                 this.enemies[this.currentWave].forEach((enemy) => enemy.spawn());
+                play('spawn');
             }
         }
 

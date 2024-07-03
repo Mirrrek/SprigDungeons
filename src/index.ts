@@ -43,7 +43,9 @@ player.onEnterLevel = (direction) => {
     }
     if (currentLevel.getState() === 'waiting') {
         currentLevel.generateChildLevels();
-        currentLevel.startFight();
+        currentLevel.startFight(() => {
+            levelsConquered++;
+        });
     }
 }
 

@@ -1,6 +1,7 @@
 import { screenWidth, screenHeight, doorWidth, Direction } from '@/constants';
 import getSprite from '@/sprites';
 import Enemy from '@/enemy';
+import play from '@/audio';
 
 export default class Player {
     private x: number;
@@ -67,6 +68,8 @@ export default class Player {
         if (this.y > screenHeight - 2) {
             this.y = screenHeight - 2;
         }
+
+        play('move');
     }
 
     setX(x: number): void {
@@ -94,6 +97,8 @@ export default class Player {
     shoot(direction: Direction, enemies: Enemy[]): number {
         this.direction = direction;
         this.lastShot = Date.now();
+
+        play('shoot');
 
         let enemiesHit = 0;
 
@@ -126,6 +131,10 @@ export default class Player {
                     break;
             }
         });
+
+        if (enemiesHit > 0) {
+            play('hit');
+        }
 
         return enemiesHit;
     }
