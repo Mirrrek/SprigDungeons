@@ -69,7 +69,7 @@ function loop(time: number): void {
         addText('Press any', { x: Math.floor(screenWidth / 2 - 4.5), y: Math.floor(screenHeight / 2 - 1.5), color: '0' });
         addText('arrow key', { x: Math.floor(screenWidth / 2 - 4.5), y: Math.floor(screenHeight / 2 - 1.5) + 1, color: '5' });
         addText('to start', { x: Math.floor(screenWidth / 2 - 4.5), y: Math.floor(screenHeight / 2 - 1.5) + 2, color: '0' });
-        if (!input.primary.up && !input.primary.down && !input.primary.left && !input.primary.right) {
+        if (!input.primary.up() && !input.primary.down() && !input.primary.left() && !input.primary.right()) {
             return;
         }
         inMenu = false;
@@ -77,30 +77,30 @@ function loop(time: number): void {
     }
 
     // Movement
-    if (input.primary.up && !input.primary.down) {
+    if (input.primary.up() && !input.primary.down()) {
         player.move(0, -1);
     }
-    if (input.primary.down && !input.primary.up) {
+    if (input.primary.down() && !input.primary.up()) {
         player.move(0, 1);
     }
-    if (input.primary.left && !input.primary.right) {
+    if (input.primary.left() && !input.primary.right()) {
         player.move(-1, 0);
     }
-    if (input.primary.right && !input.primary.left) {
+    if (input.primary.right() && !input.primary.left()) {
         player.move(1, 0);
     }
 
     // Shooting
-    if (input.secondary.up && !input.secondary.left && !input.secondary.down && !input.secondary.right) {
+    if (input.secondary.up() && !input.secondary.left() && !input.secondary.down() && !input.secondary.right()) {
         player.shoot('north');
     }
-    if (!input.secondary.up && input.secondary.left && !input.secondary.down && !input.secondary.right) {
+    if (!input.secondary.up() && input.secondary.left() && !input.secondary.down() && !input.secondary.right()) {
         player.shoot('west');
     }
-    if (!input.secondary.up && !input.secondary.left && input.secondary.down && !input.secondary.right) {
+    if (!input.secondary.up() && !input.secondary.left() && input.secondary.down() && !input.secondary.right()) {
         player.shoot('south');
     }
-    if (!input.secondary.up && !input.secondary.left && !input.secondary.down && input.secondary.right) {
+    if (!input.secondary.up() && !input.secondary.left() && !input.secondary.down() && input.secondary.right()) {
         player.shoot('east');
     }
 

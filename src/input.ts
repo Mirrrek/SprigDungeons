@@ -1,88 +1,160 @@
+let wTimeout: any = -1;
+let wInCooldown = false;
+let wRead = false;
+
+let aTimeout: any = -1;
+let aInCooldown = false;
+let aRead = false;
+
+let sTimeout: any = -1;
+let sInCooldown = false;
+let sRead = false;
+
+let dTimeout: any = -1;
+let dInCooldown = false;
+let dRead = false;
+
+let iTimeout: any = -1;
+let iInCooldown = false;
+let iRead = false;
+
+let jTimeout: any = -1;
+let jInCooldown = false;
+let jRead = false;
+
+let kTimeout: any = -1;
+let kInCooldown = false;
+let kRead = false;
+
+let lTimeout: any = -1;
+let lInCooldown = false;
+let lRead = false;
+
 const input = {
     primary: {
-        up: false,
-        down: false,
-        left: false,
-        right: false
+        up() {
+            if (!wInCooldown) return false;
+            if (wRead) return false;
+            wRead = true;
+            return true;
+        },
+        down() {
+            if (!sInCooldown) return false;
+            if (sRead) return false;
+            sRead = true;
+            return true;
+        },
+        left() {
+            if (!aInCooldown) return false;
+            if (aRead) return false;
+            aRead = true;
+            return true;
+        },
+        right() {
+            if (!dInCooldown) return false;
+            if (dRead) return false;
+            dRead = true;
+            return true;
+        }
     },
     secondary: {
-        up: false,
-        down: false,
-        left: false,
-        right: false
+        up() {
+            if (!iInCooldown) return false;
+            if (iRead) return false;
+            iRead = true;
+            return true;
+        },
+        down() {
+            if (!kInCooldown) return false;
+            if (kRead) return false;
+            kRead = true;
+            return true;
+        },
+        left() {
+            if (!jInCooldown) return false;
+            if (jRead) return false;
+            jRead = true;
+            return true;
+        },
+        right() {
+            if (!lInCooldown) return false;
+            if (lRead) return false;
+            lRead = true;
+            return true;
+        }
     }
 }
 
 export default input;
 
-let wTimeout: any = -1;
 onInput('w', () => {
     clearTimeout(wTimeout);
-    input.primary.up = true;
+    wInCooldown = true;
     wTimeout = setTimeout(() => {
-        input.primary.up = false;
+        wInCooldown = false;
+        wRead = false;
     }, 100);
 });
 
-let aTimeout: any = -1;
 onInput('a', () => {
     clearTimeout(aTimeout);
-    input.primary.left = true;
+    aInCooldown = true;
     aTimeout = setTimeout(() => {
-        input.primary.left = false;
+        aInCooldown = false;
+        aRead = false;
     }, 100);
 });
 
-let sTimeout: any = -1;
 onInput('s', () => {
     clearTimeout(sTimeout);
-    input.primary.down = true;
+    sInCooldown = true;
     sTimeout = setTimeout(() => {
-        input.primary.down = false;
+        sInCooldown = false;
+        sRead = false;
     }, 100);
 });
 
-let dTimeout: any = -1;
 onInput('d', () => {
     clearTimeout(dTimeout);
-    input.primary.right = true;
+    dInCooldown = true;
     dTimeout = setTimeout(() => {
-        input.primary.right = false;
+        dInCooldown = false;
+        dRead = false;
     }, 100);
 });
 
-let iTimeout: any = -1;
 onInput('i', () => {
     clearTimeout(iTimeout);
-    input.secondary.up = true;
+    iInCooldown = true;
     iTimeout = setTimeout(() => {
-        input.secondary.up = false;
+        iInCooldown = false;
+        iRead = false;
     }, 100);
 });
 
-let jTimeout: any = -1;
 onInput('j', () => {
     clearTimeout(jTimeout);
-    input.secondary.left = true;
+    jInCooldown = true;
     jTimeout = setTimeout(() => {
-        input.secondary.left = false;
+        jInCooldown = false;
+        jRead = false;
     }, 100);
 });
 
-let kTimeout: any = -1;
 onInput('k', () => {
     clearTimeout(kTimeout);
-    input.secondary.down = true;
+    kInCooldown = true;
     kTimeout = setTimeout(() => {
-        input.secondary.down = false;
+        kInCooldown = false;
+        kRead = false;
     }, 100);
 });
 
-let lTimeout: any = -1;
 onInput('l', () => {
     clearTimeout(lTimeout);
-    input.secondary.right = true;
+    lInCooldown = true;
     lTimeout = setTimeout(() => {
-        input.secondary.right = false;
+        lInCooldown = false;
+        lRead = false;
     }, 100);
 });

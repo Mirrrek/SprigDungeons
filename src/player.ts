@@ -24,7 +24,7 @@ export default class Player {
             addSprite(this.x + (this.direction === 'east' ? 1 : this.direction === 'west' ? -1 : 0),
                 this.y + (this.direction === 'south' ? 1 : this.direction === 'north' ? -1 : 0),
                 getSprite(`muzzle-flash-${this.direction}`));
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < Math.max(screenWidth, screenHeight); i++) {
                 if (this.direction === 'north' && this.y - 2 - i < 1) break;
                 if (this.direction === 'south' && this.y + 2 + i >= screenHeight - 1) break;
                 if (this.direction === 'west' && this.x - 2 - i < 1) break;
