@@ -22,17 +22,17 @@ declare namespace Sprig {
     }
 
     // Objects
-    interface Bitmap { }
-    interface Map { }
-    interface Color { }
-    interface Tune { }
+    type Bitmap = string;
+    type Map = string;
+    type Color = string;
+    type Tune = string;
 }
 
 // Object constructors
-declare function bitmap(data: TemplateStringsArray): Sprig.Bitmap;
-declare function map(data: TemplateStringsArray): Sprig.Map;
-declare function color(data: TemplateStringsArray): Sprig.Color;
-declare function tune(data: TemplateStringsArray): Sprig.Tune;
+declare function bitmap(template: TemplateStringsArray, ...params: string[]): Sprig.Bitmap;
+declare function map(template: TemplateStringsArray, ...params: string[]): Sprig.Map;
+declare function color(template: TemplateStringsArray, ...params: string[]): Sprig.Color;
+declare function tune(template: TemplateStringsArray, ...params: string[]): Sprig.Tune;
 
 // Functions
 declare function setLegend(...bitmaps: [Sprig.SpriteType, Sprig.Bitmap][]): void;
