@@ -1,0 +1,29 @@
+const path = require('path');
+
+module.exports = (env, argv) => {
+    const isDevelopment = argv.mode === 'development';
+    return {
+        entry: './src/index.ts',
+        devtool: isDevelopment ? 'inline-source-map' : false,
+        module: {
+            rules: [
+                {
+                    test: /\.ts$/i,
+                    use: 'ts-loader'
+                }
+            ]
+        },
+        resolve: {
+            extensions: ['.ts', '.js'],
+            alias: {
+                '@': path.resolve(__dirname, 'src'),
+            }
+        },
+        output: {
+            filename: 'sprig-dungeons.js',
+            path: path.resolve(__dirname, 'dist'),
+            clean: true
+        },
+        watch: isDevelopment
+    }
+};
