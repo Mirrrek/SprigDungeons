@@ -1,5 +1,17 @@
-function main() {
-    console.log('Hello World!');
+import Level from '@/level';
+
+const spawn = new Level(null);
+
+function loop() {
+    getAll().forEach((sprite) => sprite.remove());
+    spawn.render(false);
 }
 
-main();
+function update() {
+    loop();
+    setTimeout(() => {
+        update();
+    }, 100);
+}
+
+update();
