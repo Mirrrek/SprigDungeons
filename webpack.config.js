@@ -4,7 +4,6 @@ module.exports = (env, argv) => {
     const isDevelopment = argv.mode === 'development';
     return {
         entry: './src/index.ts',
-        devtool: isDevelopment ? 'inline-source-map' : false,
         module: {
             rules: [
                 {
