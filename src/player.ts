@@ -97,6 +97,16 @@ export default class Player {
                 this.onDeath();
             }
         }
+
+        const lootEnemy = enemies.find((enemy) => {
+            if (enemy.getState() !== 'dead' || enemy.getLoot() === null) return false;
+            const enemyPosition = enemy.getPosition();
+            return enemyPosition.x === this.x && enemyPosition.y === this.y;
+        }) ?? null;
+
+        if (lootEnemy !== null) {
+            lootEnemy.collectLoot();
+        }
     }
 
     setX(x: number): void {

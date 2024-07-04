@@ -1,6 +1,8 @@
 import { Direction } from '@/constants';
 import getSprite from '@/sprites';
 
+export type Loot = 'apple';
+
 export default class Enemy {
     private x: number;
     private y: number;
@@ -10,6 +12,8 @@ export default class Enemy {
     private lastMove: number;
     private dieTime: number | null;
 
+    private loot: Loot | null;
+
     constructor(x: number, y: number, direction: Direction) {
         this.x = x;
         this.y = y;
@@ -17,6 +21,7 @@ export default class Enemy {
         this.spawnTime = 0;
         this.lastMove = 0;
         this.dieTime = null;
+        this.loot = Math.random() < 0.05 ? 'apple' : null;
     }
 
     render(time: number): void {
@@ -30,6 +35,10 @@ export default class Enemy {
                 addSprite(this.x, this.y, getSprite('enemy-death-0'));
             } else {
                 addSprite(this.x, this.y, getSprite('enemy-death-1'));
+                if (this.loot !== null) {
+                    const step = Math.floor(time / 500) % 2 === 0 ? '0' : '1';
+                    addSprite(this.x, this.y, getSprite(`loot-${this.loot}-${step}`));
+                }
             }
             return;
         }
@@ -103,5 +112,13 @@ export default class Enemy {
 
     getPosition(): { x: number, y: number } {
         return { x: this.x, y: this.y };
+    }
+
+    getLoot(): Loot | null {
+        return this.loot;
+    }
+
+    collectLoot(): void {
+        this.loot = null;
     }
 }
