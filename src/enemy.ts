@@ -1,7 +1,12 @@
 import { Direction } from '@/constants';
 import getSprite from '@/sprites';
 
-export type Loot = 'apple';
+const loot = [
+    { name: 'apple', chance: 0.05 },
+    { name: 'shield-potion', chance: 0.025 }
+] as const;
+
+export type Loot = typeof loot[number]['name'];
 
 export default class Enemy {
     private x: number;
@@ -21,7 +26,9 @@ export default class Enemy {
         this.spawnTime = 0;
         this.lastMove = 0;
         this.dieTime = null;
-        this.loot = Math.random() < 0.05 ? 'apple' : null;
+
+        const randomLoot = loot[Math.floor(Math.random() * loot.length)];
+        this.loot = Math.random() < randomLoot.chance * loot.length ? randomLoot.name : null;
     }
 
     render(time: number): void {

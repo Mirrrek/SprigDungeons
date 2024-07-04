@@ -3,12 +3,19 @@ import getSprite from '@/sprites';
 import Enemy from '@/enemy';
 import play from '@/audio';
 
+const powerUps = {
+    shield: 10000
+}
+
+export type PowerUp = keyof typeof powerUps;
+
 export default class Player {
     private x: number;
     private y: number;
 
     private direction: Direction;
     private lastShot: { time: number, distance: number };
+    private powerUps: { type: PowerUp, time: number }[] = [];
 
     onEnterLevel: ((direction: Direction) => void) | null = null;
     onDeath: (() => void) | null = null;
@@ -37,6 +44,12 @@ export default class Player {
                 addSprite(this.x + (this.direction === 'east' ? 2 + i : this.direction === 'west' ? -2 - i : 0),
                     this.y + (this.direction === 'south' ? 2 + i : this.direction === 'north' ? -2 - i : 0),
                     getSprite(`bullet-path-${i === 0 ? '0' : i === 1 ? '1' : '2'}-${this.direction}`));
+            }
+        }
+
+        if (this.powerUps.some((p) => p.type === 'shield')) {
+            if (Math.max(...this.powerUps.filter((p) => p.type === 'shield').map((p) => p.time)) + powerUps['shield'] - Date.now() > 3000 || Math.floor(time / 250) % 2 === 0) {
+                addSprite(this.x, this.y, getSprite('shield'));
             }
         }
     }
@@ -87,7 +100,7 @@ export default class Player {
     }
 
     update(enemies: Enemy[]): void {
-        if (enemies.some((enemy) => {
+        if (!this.powerUps.some((p) => p.type === 'shield') && enemies.some((enemy) => {
             if (enemy.getState() !== 'active') return false;
             const enemyPosition = enemy.getPosition();
             return enemyPosition.x === this.x && enemyPosition.y === this.y;
@@ -105,8 +118,19 @@ export default class Player {
         }) ?? null;
 
         if (lootEnemy !== null) {
+            const loot = lootEnemy.getLoot();
             lootEnemy.collectLoot();
+
+            switch (loot) {
+                case 'shield-potion':
+                    this.powerUps.push({ type: 'shield', time: Date.now() });
+                    break;
+            }
         }
+
+        this.powerUps = this.powerUps.filter((powerUp) => {
+            return powerUps[powerUp.type] === -1 || Date.now() - powerUp.time < powerUps[powerUp.type];
+        });
     }
 
     setX(x: number): void {
