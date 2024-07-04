@@ -21,7 +21,7 @@ export default class Player {
     }
 
     render(time: number): void {
-        const step = Math.floor(time / 500) % 2 === 0 ? '0' : '1';
+        const step = Math.floor(time / 300) % 2 === 0 ? '0' : '1';
         addSprite(this.x, this.y, getSprite(`player-${step}-${this.direction}`));
 
         if (Date.now() - this.lastShot < 100) {
