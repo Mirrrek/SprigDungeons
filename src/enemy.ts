@@ -85,16 +85,20 @@ export default class Enemy {
         this.dieTime = Date.now();
     }
 
-    isSpawned(): boolean {
-        return this.spawnTime !== 0;
-    }
+    getState(): 'waiting' | 'spawning' | 'active' | 'dead' {
+        if (this.spawnTime === 0) {
+            return 'waiting';
+        }
 
-    isActive(): boolean {
-        return this.spawnTime !== 0 && Date.now() - this.spawnTime > 2000;
-    }
+        if (this.dieTime !== null) {
+            return 'dead';
+        }
 
-    isDead(): boolean {
-        return this.dieTime !== null;
+        if (Date.now() - this.spawnTime < 1000) {
+            return 'spawning';
+        }
+
+        return 'active';
     }
 
     getPosition(): { x: number, y: number } {

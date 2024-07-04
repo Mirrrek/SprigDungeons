@@ -199,29 +199,29 @@ function difficultyMenuLoop(time: number): void {
 
 function gameLoop(time: number): void {
     if (input.primary.up()) {
-        player.move(0, -1);
+        player.move('north');
     }
     if (input.primary.down()) {
-        player.move(0, 1);
+        player.move('south');
     }
     if (input.primary.left()) {
-        player.move(-1, 0);
+        player.move('west');
     }
     if (input.primary.right()) {
-        player.move(1, 0);
+        player.move('east');
     }
 
     if (input.secondary.up()) {
-        player.shoot('north', currentLevel.getEnemies(false));
+        player.shoot('north', currentLevel.getEnemies());
     }
     if (input.secondary.left()) {
-        player.shoot('west', currentLevel.getEnemies(false));
+        player.shoot('west', currentLevel.getEnemies());
     }
     if (input.secondary.down()) {
-        player.shoot('south', currentLevel.getEnemies(false));
+        player.shoot('south', currentLevel.getEnemies());
     }
     if (input.secondary.right()) {
-        player.shoot('east', currentLevel.getEnemies(false));
+        player.shoot('east', currentLevel.getEnemies());
     }
 
     currentLevel.update(player.getPosition(), calculateEnemySpeed());

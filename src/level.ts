@@ -106,7 +106,7 @@ export default class Level {
             return;
         }
 
-        if (this.enemies[this.currentWave].every((enemy) => enemy.isDead())) {
+        if (this.enemies[this.currentWave].every((enemy) => enemy.getState() === 'dead')) {
             if (this.newWaveTime === 0) {
                 if (this.currentWave === 2) {
                     this.state = 'conquered';
@@ -225,7 +225,7 @@ export default class Level {
         return this.state;
     }
 
-    getEnemies(active = true): Enemy[] {
-        return this.enemies[this.currentWave].filter((enemy) => (active ? enemy.isActive() : enemy.isSpawned()) && !enemy.isDead());
+    getEnemies(): Enemy[] {
+        return this.enemies.flat();
     }
 }
