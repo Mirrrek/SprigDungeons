@@ -118,30 +118,30 @@ function loop(time: number): void {
     }
 
     // Movement
-    if (input.primary.up() && !input.primary.down()) {
+    if (input.primary.up()) {
         player.move(0, -1);
     }
-    if (input.primary.down() && !input.primary.up()) {
+    if (input.primary.down()) {
         player.move(0, 1);
     }
-    if (input.primary.left() && !input.primary.right()) {
+    if (input.primary.left()) {
         player.move(-1, 0);
     }
-    if (input.primary.right() && !input.primary.left()) {
+    if (input.primary.right()) {
         player.move(1, 0);
     }
 
     // Shooting
-    if (input.secondary.up() && !input.secondary.left() && !input.secondary.down() && !input.secondary.right()) {
+    if (input.secondary.up()) {
         player.shoot('north', currentLevel.getEnemies(false));
     }
-    if (!input.secondary.up() && input.secondary.left() && !input.secondary.down() && !input.secondary.right()) {
+    if (input.secondary.left()) {
         player.shoot('west', currentLevel.getEnemies(false));
     }
-    if (!input.secondary.up() && !input.secondary.left() && input.secondary.down() && !input.secondary.right()) {
+    if (input.secondary.down()) {
         player.shoot('south', currentLevel.getEnemies(false));
     }
-    if (!input.secondary.up() && !input.secondary.left() && !input.secondary.down() && input.secondary.right()) {
+    if (input.secondary.right()) {
         player.shoot('east', currentLevel.getEnemies(false));
     }
 
