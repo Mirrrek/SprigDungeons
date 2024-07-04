@@ -23,7 +23,7 @@ function init() {
     gameState = 'start-menu';
     gameSettings = {
         difficulty: 'normal',
-        music: true,
+        music: false,
         sfx: true
     }
     startMenuOption = 'start';
@@ -36,7 +36,7 @@ function init() {
     currentLevel.generateChildLevels();
     currentLevel.skipFight();
 
-    musicPlayer = play('theme-main', Infinity);
+    musicPlayer = gameSettings.music ? play('theme-main', Infinity) : { end: () => { } };
 
     player.onEnterLevel = (direction) => {
         if (currentLevel.getState() !== 'conquered') {
