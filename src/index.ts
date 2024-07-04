@@ -250,9 +250,9 @@ function calculateEnemySpeed(): number {
         case 'normal':
             return 1 + levelsConquered * 0.15;
         case 'hard':
-            return 1.5 + levelsConquered * 0.25;
+            return 1.5 + levelsConquered * 0.3;
         case 'impossible':
-            return 2 + levelsConquered * 0.5;
+            return 2 + levelsConquered * 0.6;
     }
 }
 
