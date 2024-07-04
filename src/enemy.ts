@@ -3,7 +3,8 @@ import getSprite from '@/sprites';
 
 const loot = [
     { name: 'apple', chance: 0.05 },
-    { name: 'shield-potion', chance: 0.025 }
+    { name: 'shield-potion', chance: 0.015 },
+    { name: 'sight-potion', chance: 0.01 }
 ] as const;
 
 export type Loot = typeof loot[number]['name'];
