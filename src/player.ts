@@ -9,6 +9,7 @@ export default class Player {
 
     private direction: Direction;
     private lastShot: number = 0;
+    private lastShotDistance: number = -1;
 
     onEnterLevel: ((direction: Direction) => void) | null = null;
     onDeath: (() => void) | null = null;
@@ -28,6 +29,7 @@ export default class Player {
                 this.y + (this.direction === 'south' ? 1 : this.direction === 'north' ? -1 : 0),
                 getSprite(`muzzle-flash-${this.direction}`));
             for (let i = 0; i < Math.max(screenWidth, screenHeight); i++) {
+                if (this.lastShotDistance !== -1 && i > this.lastShotDistance - 3) break;
                 if (this.direction === 'north' && this.y - 2 - i < 1) break;
                 if (this.direction === 'south' && this.y + 2 + i >= screenHeight - 1) break;
                 if (this.direction === 'west' && this.x - 2 - i < 1) break;
@@ -107,49 +109,74 @@ export default class Player {
         }
     }
 
-    shoot(direction: Direction, enemies: Enemy[]): number {
+    shoot(direction: Direction, enemies: Enemy[]): void {
         this.direction = direction;
         this.lastShot = Date.now();
 
         play('shoot');
 
-        let enemiesHit = 0;
+        let enemiesInLine: Enemy[] = [];
 
         enemies.forEach((enemy) => {
             const enemyPosition = enemy.getPosition();
             switch (direction) {
                 case 'north':
                     if (enemyPosition.x === this.x && enemyPosition.y <= this.y) {
-                        enemiesHit++;
-                        enemy.die();
+                        enemiesInLine.push(enemy);
                     }
                     break;
                 case 'south':
                     if (enemyPosition.x === this.x && enemyPosition.y >= this.y) {
-                        enemiesHit++;
-                        enemy.die();
+                        enemiesInLine.push(enemy);
                     }
                     break;
                 case 'west':
                     if (enemyPosition.y === this.y && enemyPosition.x <= this.x) {
-                        enemiesHit++;
-                        enemy.die();
+                        enemiesInLine.push(enemy);
                     }
                     break;
                 case 'east':
                     if (enemyPosition.y === this.y && enemyPosition.x >= this.x) {
-                        enemiesHit++;
-                        enemy.die();
+                        enemiesInLine.push(enemy);
                     }
                     break;
             }
         });
 
-        if (enemiesHit > 0) {
-            play('hit');
-        }
+        enemiesInLine.sort((a, b) => {
+            const aPosition = a.getPosition();
+            const bPosition = b.getPosition();
+            switch (direction) {
+                case 'north':
+                    return bPosition.y - aPosition.y;
+                case 'south':
+                    return aPosition.y - bPosition.y;
+                case 'west':
+                    return bPosition.x - aPosition.x;
+                case 'east':
+                    return aPosition.x - bPosition.x;
+            }
+        });
 
-        return enemiesHit;
+        if (enemiesInLine.length > 0) {
+            switch (direction) {
+                case 'north':
+                    this.lastShotDistance = this.y - enemiesInLine[0].getPosition().y;
+                    break;
+                case 'south':
+                    this.lastShotDistance = enemiesInLine[0].getPosition().y - this.y;
+                    break;
+                case 'west':
+                    this.lastShotDistance = this.x - enemiesInLine[0].getPosition().x;
+                    break;
+                case 'east':
+                    this.lastShotDistance = enemiesInLine[0].getPosition().x - this.x;
+                    break;
+            }
+            enemiesInLine[0].die();
+        } else {
+            this.lastShotDistance = -1;
+        }
     }
 
     getPosition(): { x: number, y: number } {
