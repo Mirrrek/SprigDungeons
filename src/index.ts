@@ -5,66 +5,79 @@ import input from '@/input';
 import play, { setSfx } from '@/audio';
 import menu from '@/menu';
 
-let gameState: 'start-menu' | 'difficulty-menu' | 'game' | 'dead' = 'start-menu';
+let gameState: 'start-menu' | 'difficulty-menu' | 'game' | 'dead';
+let gameSettings: { difficulty: 'normal' | 'hard' | 'impossible', music: boolean, sfx: boolean };
+let startMenuOption: 'music' | 'sfx' | 'start';
 
-const gameSettings: { difficulty: 'normal' | 'hard' | 'impossible', music: boolean, sfx: boolean } = {
-    difficulty: 'normal',
-    music: true,
-    sfx: true
-}
+let levelsConquered: number;
+let deathTime: number;
 
-let startMenuOption: 'music' | 'sfx' | 'start' = 'start';
+let player: Player;
+let currentLevel: Level;
 
-const player = new Player();
+let musicPlayer: Sprig.Playback;
 
-const spawn = new Level(null);
-spawn.generateChildLevels();
-spawn.skipFight();
+init();
 
-let currentLevel = spawn;
+function init() {
+    gameState = 'start-menu';
+    gameSettings = {
+        difficulty: 'normal',
+        music: true,
+        sfx: true
+    }
+    startMenuOption = 'start';
 
-let levelsConquered = 0;
+    levelsConquered = 0;
+    deathTime = 0;
 
-let musicPlayer = play('theme-main', Infinity);
+    player = new Player();
+    currentLevel = new Level(() => levelsConquered, null);
+    currentLevel.generateChildLevels();
+    currentLevel.skipFight();
 
-player.onEnterLevel = (direction) => {
-    if (currentLevel.getState() !== 'conquered') {
-        return;
+    musicPlayer = play('theme-main', Infinity);
+
+    player.onEnterLevel = (direction) => {
+        if (currentLevel.getState() !== 'conquered') {
+            return;
+        }
+
+        const nextLevel = currentLevel.getLevel(direction);
+        if (nextLevel === null) {
+            return;
+        }
+
+        currentLevel = nextLevel;
+        switch (direction) {
+            case 'north':
+                player.setY(screenHeight - 2);
+                break;
+            case 'south':
+                player.setY(1);
+                break;
+            case 'west':
+                player.setX(screenWidth - 2);
+                break;
+            case 'east':
+                player.setX(1);
+                break;
+        }
+        if (currentLevel.getState() === 'waiting') {
+            currentLevel.generateChildLevels();
+            currentLevel.startFight(() => {
+                levelsConquered++;
+            });
+        }
     }
 
-    const nextLevel = currentLevel.getLevel(direction);
-    if (nextLevel === null) {
-        return;
-    }
-
-    currentLevel = nextLevel;
-    switch (direction) {
-        case 'north':
-            player.setY(screenHeight - 2);
-            break;
-        case 'south':
-            player.setY(1);
-            break;
-        case 'west':
-            player.setX(screenWidth - 2);
-            break;
-        case 'east':
-            player.setX(1);
-            break;
-    }
-    if (currentLevel.getState() === 'waiting') {
-        currentLevel.generateChildLevels();
-        currentLevel.startFight(() => {
-            levelsConquered++;
-        });
-    }
-}
-
-player.onDeath = () => {
-    gameState = 'dead';
-    musicPlayer.end();
-    if (gameSettings.music) {
-        musicPlayer = play('theme-death', Infinity);
+    player.onDeath = () => {
+        deathTime = Date.now();
+        gameState = 'dead';
+        musicPlayer.end();
+        if (gameSettings.music) {
+            musicPlayer = play('theme-death', Infinity);
+        }
     }
 }
 
@@ -223,6 +236,23 @@ function deadLoop(time: number): void {
     getAll().forEach((sprite) => sprite.remove());
     currentLevel.render(time);
     menu([{ text: 'you died!', color: 'RED' }]);
+
+    if ((input.primary.up() || input.primary.down() || input.primary.left() || input.primary.right()) && Date.now() - deathTime > 1000) {
+        clearText();
+        musicPlayer.end();
+        init();
+    }
+}
+
+function calculateEnemySpeed(): number {
+    switch (gameSettings.difficulty) {
+        case 'normal':
+            return 1 + levelsConquered * 0.15;
+        case 'hard':
+            return 1.5 + levelsConquered * 0.25;
+        case 'impossible':
+            return 2 + levelsConquered * 0.5;
+    }
 }
 
 const startTime = Date.now();
