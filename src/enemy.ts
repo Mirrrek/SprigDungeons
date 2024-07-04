@@ -54,12 +54,12 @@ export default class Enemy {
         this.lastMove = Date.now() + 1000;
     }
 
-    update(playerPosition: { x: number, y: number }, levelsConquered: number): void {
+    update(playerPosition: { x: number, y: number }, movementSpeed: number): void {
         if (this.spawnTime === 0 || this.dieTime !== null) {
             return;
         }
 
-        if (Date.now() - this.lastMove < 20000 / (levelsConquered + 20)) {
+        if (Date.now() - this.lastMove < 1000 / movementSpeed) {
             return;
         }
 

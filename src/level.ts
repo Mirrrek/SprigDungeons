@@ -18,9 +18,11 @@ export default class Level {
     private currentWave: 0 | 1 | 2;
     private newWaveTime: number;
 
+    private getLevelsConquered: () => number;
     private onLevelConquered: (() => void) | null = null;
 
-    constructor(previousLevel: { level: Level, direction: Exclude<Direction, 'east'> } | null) {
+    constructor(getLevelsConquered: () => number, previousLevel: { level: Level, direction: Exclude<Direction, 'east'> } | null) {
+        this.getLevelsConquered = getLevelsConquered;
         this.previousLevel = previousLevel;
 
         this.state = 'waiting';
@@ -37,11 +39,7 @@ export default class Level {
             }
         }
 
-        this.enemies = [
-            new Array(3).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)])),
-            new Array(5).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)])),
-            new Array(7).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)]))
-        ];
+        this.enemies = [[], [], []];
         this.currentWave = 0;
         this.newWaveTime = 0;
     }
@@ -58,30 +56,30 @@ export default class Level {
 
         switch (nextLevelDirection) {
             case 'north': {
-                this.northLevel = new Level({ level: this, direction: 'south' });
+                this.northLevel = new Level(this.getLevelsConquered, { level: this, direction: 'south' });
                 if (Math.random() < 0.15) {
-                    this.eastLevel = new Level({ level: this, direction: 'west' });
+                    this.eastLevel = new Level(this.getLevelsConquered, { level: this, direction: 'west' });
                 }
                 if (Math.random() < 0.15 && this.previousLevel?.direction !== 'south') {
-                    this.southLevel = new Level({ level: this, direction: 'north' });
+                    this.southLevel = new Level(this.getLevelsConquered, { level: this, direction: 'north' });
                 }
             } break;
             case 'east': {
-                this.eastLevel = new Level({ level: this, direction: 'west' });
+                this.eastLevel = new Level(this.getLevelsConquered, { level: this, direction: 'west' });
                 if (Math.random() < 0.15 && this.previousLevel?.direction !== 'north') {
-                    this.northLevel = new Level({ level: this, direction: 'south' });
+                    this.northLevel = new Level(this.getLevelsConquered, { level: this, direction: 'south' });
                 }
                 if (Math.random() < 0.15 && this.previousLevel?.direction !== 'south') {
-                    this.southLevel = new Level({ level: this, direction: 'north' });
+                    this.southLevel = new Level(this.getLevelsConquered, { level: this, direction: 'north' });
                 }
             } break;
             case 'south': {
-                this.southLevel = new Level({ level: this, direction: 'north' });
+                this.southLevel = new Level(this.getLevelsConquered, { level: this, direction: 'north' });
                 if (Math.random() < 0.15 && this.previousLevel?.direction !== 'north') {
-                    this.northLevel = new Level({ level: this, direction: 'south' });
+                    this.northLevel = new Level(this.getLevelsConquered, { level: this, direction: 'south' });
                 }
                 if (Math.random() < 0.15) {
-                    this.eastLevel = new Level({ level: this, direction: 'west' });
+                    this.eastLevel = new Level(this.getLevelsConquered, { level: this, direction: 'west' });
                 }
             } break;
         }
@@ -93,12 +91,17 @@ export default class Level {
 
     startFight(onLevelConquered: () => void): void {
         this.onLevelConquered = onLevelConquered;
+
+        this.enemies[0] = new Array(3 + Math.floor(this.getLevelsConquered() / 4)).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)]));
+        this.enemies[1] = new Array(5 + Math.floor(this.getLevelsConquered() / 4)).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)]));
+        this.enemies[2] = new Array(7 + Math.floor(this.getLevelsConquered() / 4)).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)]));
+
         this.state = 'active';
         this.enemies[0].forEach((enemy) => enemy.spawn());
         play('level-start');
     }
 
-    update(playerPosition: { x: number, y: number }, levelsConquered: number): void {
+    update(playerPosition: { x: number, y: number }, enemySpeed: number): void {
         if (this.state !== 'active') {
             return;
         }
@@ -122,7 +125,7 @@ export default class Level {
             }
         }
 
-        this.enemies.forEach((wave) => wave.forEach((enemy) => enemy.update(playerPosition, levelsConquered)));
+        this.enemies.forEach((wave) => wave.forEach((enemy) => enemy.update(playerPosition, enemySpeed)));
     }
 
     getLevel(direction: Direction): Level | null {

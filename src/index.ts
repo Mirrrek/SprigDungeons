@@ -211,7 +211,7 @@ function gameLoop(time: number): void {
         player.shoot('east', currentLevel.getEnemies(false));
     }
 
-    currentLevel.update(player.getPosition(), levelsConquered);
+    currentLevel.update(player.getPosition(), calculateEnemySpeed());
     player.update(currentLevel.getEnemies());
 
     getAll().forEach((sprite) => sprite.remove());
