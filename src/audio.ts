@@ -1,6 +1,11 @@
 const tunes = [
     {
-        name: 'game-start', tune: `
+        name: 'menu-move', tune: `
+37.5: B4/37.5 + A4/37.5 + E4/37.5 + F4/37.5 + C4/37.5,
+1162.5`
+    },
+    {
+        name: 'menu-select', tune: `
 125: C5~125,
 125: G5~125,
 3750`
@@ -61,7 +66,7 @@ const tunes = [
 2333.333333333333`
     },
     {
-        name: 'main-theme', tune: `
+        name: 'theme-main', tune: `
 375: F4~375 + A4~375 + D5~375 + D4^375 + A5~375,
 375: E5~375,
 375: E5~375,
@@ -93,7 +98,7 @@ const tunes = [
 375: E5~375`
     },
     {
-        name: 'death-theme', tune: `
+        name: 'theme-death', tune: `
 375: A4~375 + E5^375,
 375: C4~375,
 375: E4~375,
@@ -128,6 +133,15 @@ const tunes = [
     }
 ] as const;
 
+let enableSfx = true;
+
 export default function play(name: typeof tunes[number]['name'], repeat: number = 1): Sprig.Playback {
+    if (!enableSfx && !name.startsWith('theme-')) {
+        return { end: () => {} };
+    }
     return playTune(tunes.find((tune) => tune.name === name)!.tune, repeat);
+}
+
+export function setSfx(enabled: boolean): void {
+    enableSfx = enabled;
 }

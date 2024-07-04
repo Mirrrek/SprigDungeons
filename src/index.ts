@@ -1,14 +1,19 @@
 import { screenWidth, screenHeight } from '@/constants';
-import getSprite from '@/sprites';
 import Player from '@/player';
 import Level from '@/level';
 import input from '@/input';
-import play from '@/audio';
+import play, { setSfx } from '@/audio';
 import menu from '@/menu';
 
-let difficulty: 'normal' | 'hard' | 'impossible' = 'normal';
-let inMenu = true;
-let died = false;
+let gameState: 'start-menu' | 'difficulty-menu' | 'game' | 'dead' = 'start-menu';
+
+const gameSettings: { difficulty: 'normal' | 'hard' | 'impossible', music: boolean, sfx: boolean } = {
+    difficulty: 'normal',
+    music: true,
+    sfx: true
+}
+
+let startMenuOption: 'music' | 'sfx' | 'start' = 'start';
 
 const player = new Player();
 
@@ -20,7 +25,7 @@ let currentLevel = spawn;
 
 let levelsConquered = 0;
 
-const mainThemePlayer = play('main-theme', Infinity);
+let musicPlayer = play('theme-main', Infinity);
 
 player.onEnterLevel = (direction) => {
     if (currentLevel.getState() !== 'conquered') {
@@ -56,68 +61,130 @@ player.onEnterLevel = (direction) => {
 }
 
 player.onDeath = () => {
-    died = true;
-    mainThemePlayer.end();
-    play('death-theme', Infinity);
+    gameState = 'dead';
+    musicPlayer.end();
+    if (gameSettings.music) {
+        musicPlayer = play('theme-death', Infinity);
+    }
 }
 
 function loop(time: number): void {
-    if (inMenu) {
-        getAll().forEach((sprite) => sprite.remove());
-        currentLevel.render(time);
-        menu([
-            { text: 'select\ndifficulty\n\n', color: 'BLACK' },
-            { text: 'normal\n', color: 'RED', highlight: difficulty === 'normal' },
-            { text: 'hard\n', color: 'RED', highlight: difficulty === 'hard' },
-            { text: 'impossible', color: 'RED', highlight: difficulty === 'impossible' }
-        ]);
-        if (input.primary.up()) {
-            if (difficulty === 'hard') {
-                difficulty = 'normal';
-            } else if (difficulty === 'impossible') {
-                difficulty = 'hard';
-            }
-        }
-        if (input.primary.down()) {
-            if (difficulty === 'normal') {
-                difficulty = 'hard';
-            } else if (difficulty === 'hard') {
-                difficulty = 'impossible';
-            }
-        }
-        if (!input.primary.right()) {
-            return;
-        }
-        inMenu = false;
-        clearText();
-        play('game-start');
+    switch (gameState) {
+        case 'start-menu':
+            startMenuLoop(time);
+            break;
+        case 'difficulty-menu':
+            difficultyMenuLoop(time);
+            break;
+        case 'game':
+            gameLoop(time);
+            break;
+        case 'dead':
+            deadLoop(time);
+            break;
     }
+}
 
-    if (died) {
-        getAll().forEach((sprite) => sprite.remove());
-        clearText();
-        currentLevel.render(time);
-        for (let y = 0; y < 3; y++) {
-            for (let x = 0; x < 11; x++) {
-                let sprite = getSprite('menu-background');
-                if (x === 0) {
-                    sprite = getSprite(y === 0 ? 'menu-background-corner-south' : y === 2 ? 'menu-background-corner-east' : 'menu-background-edge-east');
-                } else if (x === 10) {
-                    sprite = getSprite(y === 0 ? 'menu-background-corner-west' : y === 2 ? 'menu-background-corner-north' : 'menu-background-edge-west');
-                } else if (y === 0) {
-                    sprite = getSprite('menu-background-edge-south');
-                } else if (y === 2) {
-                    sprite = getSprite('menu-background-edge-north');
+function startMenuLoop(time: number): void {
+    getAll().forEach((sprite) => sprite.remove());
+    currentLevel.render(time);
+    menu([
+        { text: 'sprig dungeons\n\n', color: 'BLACK' },
+        { text: `music: ${gameSettings.music ? 'on' : 'off'}\n\n`, color: 'DARK_GRAY', highlight: startMenuOption === 'music' },
+        { text: `sfx: ${gameSettings.sfx ? 'on' : 'off'}\n\n`, color: 'DARK_GRAY', highlight: startMenuOption === 'sfx' },
+        { text: 'start', color: 'RED', highlight: startMenuOption === 'start' }
+    ]);
+    if (input.primary.up()) {
+        switch (startMenuOption) {
+            case 'sfx':
+                startMenuOption = 'music';
+                play('menu-move');
+                break;
+            case 'start':
+                startMenuOption = 'sfx';
+                play('menu-move');
+                break;
+        }
+    }
+    if (input.primary.down()) {
+        switch (startMenuOption) {
+            case 'music':
+                startMenuOption = 'sfx';
+                play('menu-move');
+                break;
+            case 'sfx':
+                startMenuOption = 'start';
+                play('menu-move');
+                break;
+        }
+    }
+    if (input.primary.right()) {
+        switch (startMenuOption) {
+            case 'music':
+                gameSettings.music = !gameSettings.music;
+                if (gameSettings.music) {
+                    musicPlayer = play('theme-main', Infinity);
+                } else {
+                    musicPlayer.end();
                 }
-
-                addSprite(Math.floor(screenWidth / 2 - 5.5) + x, Math.floor(screenHeight / 2 - 1.5) + y, sprite);
-            }
+                play('menu-select');
+                break;
+            case 'sfx':
+                gameSettings.sfx = !gameSettings.sfx;
+                setSfx(gameSettings.sfx);
+                play('menu-select');
+                break;
+            case 'start':
+                setSfx(gameSettings.sfx);
+                gameState = 'difficulty-menu';
+                clearText();
+                play('menu-select');
+                break;
         }
-        addText('You died!', { x: Math.floor(screenWidth / 2 - 4.5), y: Math.floor(screenHeight / 2 - 0.5), color: '0' });
-        return;
     }
+}
 
-    // Movement
+function difficultyMenuLoop(time: number): void {
+    getAll().forEach((sprite) => sprite.remove());
+    currentLevel.render(time);
+    menu([
+        { text: 'select\ndifficulty\n\n', color: 'BLACK' },
+        { text: 'normal\n\n', color: 'RED', highlight: gameSettings.difficulty === 'normal' },
+        { text: 'hard\n\n', color: 'RED', highlight: gameSettings.difficulty === 'hard' },
+        { text: 'impossible', color: 'RED', highlight: gameSettings.difficulty === 'impossible' }
+    ]);
+    if (input.primary.up()) {
+        switch (gameSettings.difficulty) {
+            case 'hard':
+                gameSettings.difficulty = 'normal';
+                play('menu-move');
+                break;
+            case 'impossible':
+                gameSettings.difficulty = 'hard';
+                play('menu-move');
+                break;
+        }
+    }
+    if (input.primary.down()) {
+        switch (gameSettings.difficulty) {
+            case 'normal':
+                gameSettings.difficulty = 'hard';
+                play('menu-move');
+                break;
+            case 'hard':
+                gameSettings.difficulty = 'impossible';
+                play('menu-move');
+                break;
+        }
+    }
+    if (input.primary.right()) {
+        gameState = 'game';
+        clearText();
+        play('menu-select');
+    }
+}
+
+function gameLoop(time: number): void {
     if (input.primary.up()) {
         player.move(0, -1);
     }
@@ -131,7 +198,6 @@ function loop(time: number): void {
         player.move(1, 0);
     }
 
-    // Shooting
     if (input.secondary.up()) {
         player.shoot('north', currentLevel.getEnemies(false));
     }
@@ -145,14 +211,18 @@ function loop(time: number): void {
         player.shoot('east', currentLevel.getEnemies(false));
     }
 
-    // Update
     currentLevel.update(player.getPosition(), levelsConquered);
     player.update(currentLevel.getEnemies());
 
-    // Rendering
     getAll().forEach((sprite) => sprite.remove());
     currentLevel.render(time);
     player.render(time);
+}
+
+function deadLoop(time: number): void {
+    getAll().forEach((sprite) => sprite.remove());
+    currentLevel.render(time);
+    menu([{ text: 'you died!', color: 'RED' }]);
 }
 
 const startTime = Date.now();
