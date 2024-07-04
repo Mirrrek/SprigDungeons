@@ -4,7 +4,9 @@ import Player from '@/player';
 import Level from '@/level';
 import input from '@/input';
 import play from '@/audio';
+import menu from '@/menu';
 
+let difficulty: 'normal' | 'hard' | 'impossible' = 'normal';
 let inMenu = true;
 let died = false;
 
@@ -62,28 +64,28 @@ player.onDeath = () => {
 function loop(time: number): void {
     if (inMenu) {
         getAll().forEach((sprite) => sprite.remove());
-        clearText();
         currentLevel.render(time);
-        for (let y = 0; y < 5; y++) {
-            for (let x = 0; x < 11; x++) {
-                let sprite = getSprite('menu-background');
-                if (x === 0) {
-                    sprite = getSprite(y === 0 ? 'menu-background-corner-south' : y === 4 ? 'menu-background-corner-east' : 'menu-background-edge-east');
-                } else if (x === 10) {
-                    sprite = getSprite(y === 0 ? 'menu-background-corner-west' : y === 4 ? 'menu-background-corner-north' : 'menu-background-edge-west');
-                } else if (y === 0) {
-                    sprite = getSprite('menu-background-edge-south');
-                } else if (y === 4) {
-                    sprite = getSprite('menu-background-edge-north');
-                }
-
-                addSprite(Math.floor(screenWidth / 2 - 5.5) + x, Math.floor(screenHeight / 2 - 2.5) + y, sprite);
+        menu([
+            { text: 'select\ndifficulty\n\n', color: 'BLACK' },
+            { text: 'normal\n', color: 'RED', highlight: difficulty === 'normal' },
+            { text: 'hard\n', color: 'RED', highlight: difficulty === 'hard' },
+            { text: 'impossible', color: 'RED', highlight: difficulty === 'impossible' }
+        ]);
+        if (input.primary.up()) {
+            if (difficulty === 'hard') {
+                difficulty = 'normal';
+            } else if (difficulty === 'impossible') {
+                difficulty = 'hard';
             }
         }
-        addText('Press any', { x: Math.floor(screenWidth / 2 - 4.5), y: Math.floor(screenHeight / 2 - 1.5), color: '0' });
-        addText('arrow key', { x: Math.floor(screenWidth / 2 - 4.5), y: Math.floor(screenHeight / 2 - 1.5) + 1, color: '5' });
-        addText('to start', { x: Math.floor(screenWidth / 2 - 4.5), y: Math.floor(screenHeight / 2 - 1.5) + 2, color: '0' });
-        if (!input.primary.up() && !input.primary.down() && !input.primary.left() && !input.primary.right()) {
+        if (input.primary.down()) {
+            if (difficulty === 'normal') {
+                difficulty = 'hard';
+            } else if (difficulty === 'hard') {
+                difficulty = 'impossible';
+            }
+        }
+        if (!input.primary.right()) {
             return;
         }
         inMenu = false;

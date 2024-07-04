@@ -1,4 +1,66 @@
+
+const colors = {
+    BLACK: '0',
+    DARK_GRAY: 'L',
+    LIGHT_GRAY: '1',
+    WHITE: '2',
+    RED: '3',
+    BROWN: 'C',
+    CYAN: '7',
+    BLUE: '5',
+    YELLOW: '6',
+    DARK_YELLOW: 'F',
+    GREEN: '4',
+    DARK_GREEN: 'D',
+    PINK: '8',
+    PURPLE: 'H',
+    ORANGE: '9',
+    TRANSPARENT: '.'
+}
+
+export type Color = keyof typeof colors;
+
+export function getColor(color: Color): Sprig.Color {
+    return colors[color];
+}
+
 const sprites = [
+    ...generateYMirrorSprites('menu-highlight-corner', `
+..11111111111111
+.111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+.111111111111111
+..11111111111111`),
+    {
+        name: 'menu-highlight', bitmap: `
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111`
+    },
     ...generateRotatedSprites('menu-background-edge', `
 2222222222222222
 2222222222222222
@@ -567,7 +629,7 @@ function rotateBitmap(bitmap: string, rotations: number): string {
     return rotatedLines.map(line => line.join('')).join('\n');
 }
 
-const spriteTypeChars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const spriteTypeChars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZěščřžýáíéůú';
 
 const spriteTypes: { [key in typeof sprites[number]['name']]: Sprig.SpriteType } = sprites.reduce((acc, sprite, i) => {
     if (i >= spriteTypeChars.length) {
