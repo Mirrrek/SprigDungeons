@@ -16,6 +16,7 @@ export default class Player {
     private direction: Direction;
     private lastShot: { time: number, distance: number };
     private powerUps: { type: PowerUp, time: number }[] = [];
+    private dieTime: number | null;
 
     onEnterLevel: ((direction: Direction) => void) | null = null;
     onDeath: (() => void) | null = null;
@@ -25,9 +26,19 @@ export default class Player {
         this.y = Math.floor(screenHeight / 2);
         this.direction = 'east';
         this.lastShot = { time: 0, distance: -1 };
+        this.dieTime = null;
     }
 
     render(time: number): void {
+        if (this.dieTime !== null) {
+            if (Date.now() - this.dieTime < 500) {
+                addSprite(this.x, this.y, getSprite('player-death-0'));
+            } else {
+                addSprite(this.x, this.y, getSprite('player-death-1'));
+            }
+            return;
+        }
+
         const step = Math.floor(time / 300) % 2 === 0 ? '0' : '1';
         addSprite(this.x, this.y, getSprite(`player-${step}-${this.direction}`));
 
@@ -105,10 +116,12 @@ export default class Player {
             const enemyPosition = enemy.getPosition();
             return enemyPosition.x === this.x && enemyPosition.y === this.y;
         })) {
+            this.dieTime = Date.now();
             play('death');
             if (this.onDeath !== null) {
                 this.onDeath();
             }
+            return;
         }
 
         const lootEnemy = enemies.find((enemy) => {

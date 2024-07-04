@@ -37,8 +37,7 @@ export default class Enemy {
         }
 
         if (this.dieTime !== null) {
-            const timeSinceDead = Date.now() - this.dieTime;
-            if (timeSinceDead < 500) {
+            if (Date.now() - this.dieTime < 500) {
                 addSprite(this.x, this.y, getSprite('enemy-death-0'));
             } else {
                 addSprite(this.x, this.y, getSprite('enemy-death-1'));

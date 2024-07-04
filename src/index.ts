@@ -235,6 +235,7 @@ function gameLoop(time: number): void {
 function deadLoop(time: number): void {
     getAll().forEach((sprite) => sprite.remove());
     currentLevel.render(time);
+    player.render(time);
     menu([{ text: 'you died!', color: 'RED' }]);
 
     if ((input.primary.up() || input.primary.down() || input.primary.left() || input.primary.right()) && Date.now() - deathTime > 1000) {
