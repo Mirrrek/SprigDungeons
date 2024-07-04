@@ -213,6 +213,8 @@ export default class Player {
             const loot = lootEnemy.getLoot();
             lootEnemy.collectLoot();
 
+            play('pickup');
+
             switch (loot) {
                 case 'shield-potion':
                     this.powerUps.push({ type: 'shield', time: Date.now() });
@@ -257,7 +259,7 @@ export default class Player {
         this.direction = direction;
         this.lastShot = { time: Date.now(), distance: [-1, -1, -1] }
 
-        play('shoot');
+        play(this.powerUps.some((p) => p.type === 'shotgun') ? 'shoot-shotgun' : 'shoot');
 
         let enemiesInLine: [Enemy[], Enemy[], Enemy[]] = [[], [], []];
 

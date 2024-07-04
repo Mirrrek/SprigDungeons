@@ -1,14 +1,14 @@
 const tunes = [
     {
         name: 'menu-move', tune: `
-37.5: B4/37.5 + A4/37.5 + E4/37.5 + F4/37.5 + C4/37.5,
+37.5: B4^37.5 + E4^37.5 + C4^37.5 + F4~37.5 + A4~37.5,
 1162.5`
     },
     {
         name: 'menu-select', tune: `
-125: C5~125,
-125: G5~125,
-3750`
+100: G4~100,
+100: D5~100,
+3000`
     },
     {
         name: 'move', tune: `
@@ -20,6 +20,19 @@ const tunes = [
 50: E4-50 + F4-50 + C4-50 + D4-50 + E5/50,
 50: F4-50 + D4-50 + E5/50,
 1500`
+    },
+    {
+        name: 'shoot-shotgun', tune: `
+50: F4-50 + E4-50 + D4-50 + C4-50 + B4/50,
+50: F4-50 + D4-50 + E4-50 + C4-50 + B4/50,
+1500`
+    },
+    {
+        name: 'pickup', tune: `
+83.33333333333333: C5~83.33333333333333 + C4^83.33333333333333,
+83.33333333333333: E5~83.33333333333333 + C4^83.33333333333333,
+83.33333333333333: G5~83.33333333333333 + C4^83.33333333333333,
+2416.6666666666665`
     },
     {
         name: 'hit', tune: `
@@ -137,7 +150,7 @@ let enableSfx = true;
 
 export default function play(name: typeof tunes[number]['name'], repeat: number = 1): Sprig.Playback {
     if (!enableSfx && !name.startsWith('theme-')) {
-        return { end: () => {} };
+        return { end: () => { } };
     }
     return playTune(tunes.find((tune) => tune.name === name)!.tune, repeat);
 }
