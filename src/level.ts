@@ -223,6 +223,6 @@ export default class Level {
     }
 
     getEnemies(): Enemy[] {
-        return this.enemies[this.currentWave].filter((enemy) => !enemy.isDead());
+        return this.enemies[this.currentWave].filter((enemy) => enemy.isSpawned() && !enemy.isDead());
     }
 }

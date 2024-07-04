@@ -85,6 +85,10 @@ export default class Enemy {
         this.dieTime = Date.now();
     }
 
+    isSpawned(): boolean {
+        return this.spawnTime !== 0 && Date.now() - this.spawnTime > 2000;
+    }
+
     isDead(): boolean {
         return this.dieTime !== null;
     }
