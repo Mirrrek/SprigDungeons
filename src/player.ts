@@ -4,7 +4,8 @@ import Enemy from '@/enemy';
 import play from '@/audio';
 
 const powerUps = {
-    shield: 10000
+    shield: 10000,
+    sight: 30000
 }
 
 export type PowerUp = keyof typeof powerUps;
@@ -59,8 +60,27 @@ export default class Player {
         }
 
         if (this.powerUps.some((p) => p.type === 'shield')) {
-            if (Math.max(...this.powerUps.filter((p) => p.type === 'shield').map((p) => p.time)) + powerUps['shield'] - Date.now() > 3000 || Math.floor(time / 250) % 2 === 0) {
+            if (Math.max(...this.powerUps.filter((p) => p.type === 'shield').map((p) => p.time)) + powerUps['shield'] - Date.now() > 3000 || Math.floor(time / 150) % 2 === 0) {
                 addSprite(this.x, this.y, getSprite('shield'));
+            }
+        }
+
+        const extendedVision = this.powerUps.some((p) => p.type === 'sight') && (Math.max(...this.powerUps.filter((p) => p.type === 'sight').map((p) => p.time)) + powerUps['sight'] - Date.now() > 5000 || Math.floor(time / 750) % 2 === 0);
+        for (let y = 0; y < screenHeight; y++) {
+            for (let x = 0; x < screenWidth; x++) {
+                const d = Math.sqrt((this.x - x) ** 2 + (this.y - y) ** 2);
+
+                if (d >= (extendedVision ? 9 : 2.5)) {
+                    if (d < (extendedVision ? 14 : 7)) {
+                        addSprite(x, y, getSprite('light-0'));
+                    } else if (d < (extendedVision ? 20 : 9)) {
+                        addSprite(x, y, getSprite('light-1'));
+                    } else if (d < (extendedVision ? 26 : 11)) {
+                        addSprite(x, y, getSprite('light-2'));
+                    } else {
+                        addSprite(x, y, getSprite('light-3'));
+                    }
+                }
             }
         }
     }
@@ -137,6 +157,9 @@ export default class Player {
             switch (loot) {
                 case 'shield-potion':
                     this.powerUps.push({ type: 'shield', time: Date.now() });
+                    break;
+                case 'sight-potion':
+                    this.powerUps.push({ type: 'sight', time: Date.now() });
                     break;
             }
         }

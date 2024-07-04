@@ -15,20 +15,30 @@ export default function menu(chunks: { text: string, color: Color, highlight?: b
         throw new Error('Menu too large');
     }
 
-    for (let y = 0; y < menuHeight; y++) {
-        for (let x = 0; x < menuWidth; x++) {
-            let sprite = getSprite('menu-background');
-            if (x === 0) {
-                sprite = getSprite(y === 0 ? 'menu-background-corner-south' : y === menuHeight - 1 ? 'menu-background-corner-east' : 'menu-background-edge-east');
-            } else if (x === menuWidth - 1) {
-                sprite = getSprite(y === 0 ? 'menu-background-corner-west' : y === menuHeight - 1 ? 'menu-background-corner-north' : 'menu-background-edge-west');
-            } else if (y === 0) {
-                sprite = getSprite('menu-background-edge-south');
-            } else if (y === menuHeight - 1) {
-                sprite = getSprite('menu-background-edge-north');
+    for (let y = 0; y < screenHeight; y++) {
+        for (let x = 0; x < screenWidth; x++) {
+            const menuX = x - Math.floor((screenWidth - menuWidth) / 2);
+            const menuY = y - Math.floor((screenHeight - menuHeight) / 2);
+            let sprite = getSprite('light-2');
+            if (menuX >= 0 && menuX < menuWidth && menuY >= 0 && menuY < menuHeight) {
+                if (menuX === 0) {
+                    sprite = getSprite(menuY === 0 ? 'menu-background-corner-south' : menuY === menuHeight - 1 ? 'menu-background-corner-east' : 'menu-background-edge-east');
+                } else if (menuX === menuWidth - 1) {
+                    sprite = getSprite(menuY === 0 ? 'menu-background-corner-west' : menuY === menuHeight - 1 ? 'menu-background-corner-north' : 'menu-background-edge-west');
+                } else if (menuY === 0) {
+                    sprite = getSprite('menu-background-edge-south');
+                } else if (menuY === menuHeight - 1) {
+                    sprite = getSprite('menu-background-edge-north');
+                } else {
+                    sprite = getSprite('menu-background');
+                }
+            } else if (((menuX === -1 || menuX === menuWidth) && menuY >= -1 && menuY < menuHeight + 1) || ((menuY === -1 || menuY === menuHeight) && menuX >= -1 && menuX < menuWidth + 1)) {
+                sprite = getSprite('light-0');
+            } else if (((menuX === -2 || menuX === menuWidth + 1) && menuY >= -2 && menuY < menuHeight + 2) || ((menuY === -2 || menuY === menuHeight + 1) && menuX >= -2 && menuX < menuWidth + 2)) {
+                sprite = getSprite('light-1');
             }
 
-            addSprite(Math.floor((screenWidth - menuWidth) / 2) + x, Math.floor((screenHeight - menuHeight) / 2) + y, sprite);
+            addSprite(x, y, sprite);
         }
     }
 
