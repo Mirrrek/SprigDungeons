@@ -3,8 +3,10 @@ import getSprite from '@/sprites';
 import Player from '@/player';
 import Level from '@/level';
 import input from '@/input';
+import play from '@/audio';
 
 let inMenu = true;
+let died = false;
 
 const player = new Player();
 
@@ -15,6 +17,8 @@ spawn.skipFight();
 let currentLevel = spawn;
 
 let levelsConquered = 0;
+
+const mainThemePlayer = play('main-theme', Infinity);
 
 player.onEnterLevel = (direction) => {
     if (currentLevel.getState() !== 'conquered') {
@@ -49,6 +53,12 @@ player.onEnterLevel = (direction) => {
     }
 }
 
+player.onDeath = () => {
+    died = true;
+    mainThemePlayer.end();
+    play('death-theme', Infinity);
+}
+
 function loop(time: number): void {
     if (inMenu) {
         getAll().forEach((sprite) => sprite.remove());
@@ -78,6 +88,31 @@ function loop(time: number): void {
         }
         inMenu = false;
         clearText();
+        play('game-start');
+    }
+
+    if (died) {
+        getAll().forEach((sprite) => sprite.remove());
+        clearText();
+        currentLevel.render(time);
+        for (let y = 0; y < 3; y++) {
+            for (let x = 0; x < 11; x++) {
+                let sprite = getSprite('menu-background');
+                if (x === 0) {
+                    sprite = getSprite(y === 0 ? 'menu-background-corner-south' : y === 2 ? 'menu-background-corner-east' : 'menu-background-edge-east');
+                } else if (x === 10) {
+                    sprite = getSprite(y === 0 ? 'menu-background-corner-west' : y === 2 ? 'menu-background-corner-north' : 'menu-background-edge-west');
+                } else if (y === 0) {
+                    sprite = getSprite('menu-background-edge-south');
+                } else if (y === 2) {
+                    sprite = getSprite('menu-background-edge-north');
+                }
+
+                addSprite(Math.floor(screenWidth / 2 - 5.5) + x, Math.floor(screenHeight / 2 - 1.5) + y, sprite);
+            }
+        }
+        addText('You died!', { x: Math.floor(screenWidth / 2 - 4.5), y: Math.floor(screenHeight / 2 - 0.5), color: '0' });
+        return;
     }
 
     // Movement
@@ -110,6 +145,7 @@ function loop(time: number): void {
 
     // Update
     currentLevel.update(player.getPosition(), levelsConquered);
+    player.update(currentLevel.getEnemies());
 
     // Rendering
     getAll().forEach((sprite) => sprite.remove());

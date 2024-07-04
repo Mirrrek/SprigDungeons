@@ -11,6 +11,7 @@ export default class Player {
     private lastShot: number = 0;
 
     onEnterLevel: ((direction: Direction) => void) | null = null;
+    onDeath: (() => void) | null = null;
 
     constructor() {
         this.x = Math.floor(screenWidth / 2);
@@ -70,6 +71,18 @@ export default class Player {
         }
 
         play('move');
+    }
+
+    update(enemies: Enemy[]): void {
+        if (enemies.some((enemy) => {
+            const enemyPosition = enemy.getPosition();
+            return enemyPosition.x === this.x && enemyPosition.y === this.y;
+        })) {
+            play('death');
+            if (this.onDeath !== null) {
+                this.onDeath();
+            }
+        }
     }
 
     setX(x: number): void {
