@@ -86,6 +86,10 @@ export default class Enemy {
     }
 
     isSpawned(): boolean {
+        return this.spawnTime !== 0;
+    }
+
+    isActive(): boolean {
         return this.spawnTime !== 0 && Date.now() - this.spawnTime > 2000;
     }
 

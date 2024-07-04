@@ -131,16 +131,16 @@ function loop(time: number): void {
 
     // Shooting
     if (input.secondary.up() && !input.secondary.left() && !input.secondary.down() && !input.secondary.right()) {
-        player.shoot('north', currentLevel.getEnemies());
+        player.shoot('north', currentLevel.getEnemies(false));
     }
     if (!input.secondary.up() && input.secondary.left() && !input.secondary.down() && !input.secondary.right()) {
-        player.shoot('west', currentLevel.getEnemies());
+        player.shoot('west', currentLevel.getEnemies(false));
     }
     if (!input.secondary.up() && !input.secondary.left() && input.secondary.down() && !input.secondary.right()) {
-        player.shoot('south', currentLevel.getEnemies());
+        player.shoot('south', currentLevel.getEnemies(false));
     }
     if (!input.secondary.up() && !input.secondary.left() && !input.secondary.down() && input.secondary.right()) {
-        player.shoot('east', currentLevel.getEnemies());
+        player.shoot('east', currentLevel.getEnemies(false));
     }
 
     // Update
