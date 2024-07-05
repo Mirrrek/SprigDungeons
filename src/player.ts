@@ -58,13 +58,12 @@ export default class Player {
         if (Date.now() - this.lastAttack.time < 100) {
             addSprite(this.x + (this.lastAttack.direction === 'east' ? 1 : this.lastAttack.direction === 'west' ? -1 : 0),
                 this.y + (this.lastAttack.direction === 'south' ? 1 : this.lastAttack.direction === 'north' ? -1 : 0),
-                getSprite(this.powerUps.some((p) => p.type === 'shotgun') ? `muzzle-flash-3way-${this.lastAttack.direction}` :
-                    this.powerUps.some((p) => p.type === 'handgun') ? `muzzle-flash-${this.lastAttack.direction}` :
-                        `katana-swoosh-${Date.now() - this.lastAttack.time < 50 ? '0' : '1'}-${this.lastAttack.direction}`));
+                getSprite(this.getWeapon() === 'katana' ? `katana-swoosh-${Date.now() - this.lastAttack.time < 50 ? '0' : '1'}-${this.lastAttack.direction}` :
+                    this.getWeapon() === 'handgun' ? `muzzle-flash-${this.lastAttack.direction}` : `muzzle-flash-3way-${this.lastAttack.direction}`));
 
-            if (this.powerUps.some((p) => p.type === 'handgun' || p.type === 'shotgun')) {
+            if (this.getWeapon() !== 'katana') {
                 for (let i = 0; i < 3; i++) {
-                    if (!this.powerUps.some((p) => p.type === 'shotgun') && i > 0) break;
+                    if (this.getWeapon() !== 'shotgun' && i > 0) break;
 
                     for (let j = 0; j < screenWidth + screenHeight; j++) {
                         if (this.lastAttack.distance[i] !== -1 && j > this.lastAttack.distance[i] - 3) break;
@@ -286,9 +285,9 @@ export default class Player {
 
     shoot(direction: Direction, enemies: Enemy[]): void {
         this.direction = direction;
-        this.lastAttack = { time: Date.now(), direction, distance: [-1, -1, -1] }
+        this.lastAttack = { time: Date.now(), direction, distance: this.getWeapon() === 'katana' ? [-1, -1, -1] : this.getWeapon() === 'handgun' ? [4, -1, -1] : [6, 6, 6] };
 
-        play(this.powerUps.some((p) => p.type === 'shotgun') ? 'shoot-shotgun' : this.powerUps.some((p) => p.type === 'handgun') ? 'shoot-handgun' : 'katana-swoosh');
+        play(this.getWeapon() === 'katana' ? 'katana-swoosh' : this.getWeapon() === 'handgun' ? 'shoot-handgun' : 'shoot-shotgun');
 
         let enemiesInLine: [Enemy[], Enemy[], Enemy[]] = [[], [], []];
 
@@ -296,89 +295,64 @@ export default class Player {
             if (enemy.getState() !== 'spawning' && enemy.getState() !== 'active') return;
 
             const enemyPosition = enemy.getPosition();
-            if (!this.powerUps.some((p) => p.type === 'handgun' || p.type === 'shotgun')) {
-                switch (direction) {
-                    case 'north':
-                        if (enemyPosition.x === this.x && (enemyPosition.y === this.y || enemyPosition.y === this.y - 1)) {
-                            enemiesInLine[0].push(enemy);
-                        }
-                        break;
-                    case 'south':
-                        if (enemyPosition.x === this.x && (enemyPosition.y === this.y || enemyPosition.y === this.y + 1)) {
-                            enemiesInLine[0].push(enemy);
-                        }
-                        break;
-                    case 'west':
-                        if (enemyPosition.y === this.y && (enemyPosition.x === this.x || enemyPosition.x === this.x - 1)) {
-                            enemiesInLine[0].push(enemy);
-                        }
-                        break;
-                    case 'east':
-                        if (enemyPosition.y === this.y && (enemyPosition.x === this.x || enemyPosition.x === this.x + 1)) {
-                            enemiesInLine[0].push(enemy);
-                        }
-                        break;
-                }
-            } else {
-                switch (direction) {
-                    case 'north':
-                        if (enemyPosition.x === this.x && enemyPosition.y <= this.y) {
-                            enemiesInLine[0].push(enemy);
-                        }
-                        break;
-                    case 'south':
-                        if (enemyPosition.x === this.x && enemyPosition.y >= this.y) {
-                            enemiesInLine[0].push(enemy);
-                        }
-                        break;
-                    case 'west':
-                        if (enemyPosition.y === this.y && enemyPosition.x <= this.x) {
-                            enemiesInLine[0].push(enemy);
-                        }
-                        break;
-                    case 'east':
-                        if (enemyPosition.y === this.y && enemyPosition.x >= this.x) {
-                            enemiesInLine[0].push(enemy);
-                        }
-                        break;
-                }
+            switch (direction) {
+                case 'north':
+                    if (enemyPosition.x === this.x && enemyPosition.y <= this.y) {
+                        enemiesInLine[0].push(enemy);
+                    }
+                    break;
+                case 'south':
+                    if (enemyPosition.x === this.x && enemyPosition.y >= this.y) {
+                        enemiesInLine[0].push(enemy);
+                    }
+                    break;
+                case 'west':
+                    if (enemyPosition.y === this.y && enemyPosition.x <= this.x) {
+                        enemiesInLine[0].push(enemy);
+                    }
+                    break;
+                case 'east':
+                    if (enemyPosition.y === this.y && enemyPosition.x >= this.x) {
+                        enemiesInLine[0].push(enemy);
+                    }
+                    break;
+            }
 
-                if (this.powerUps.some((p) => p.type === 'shotgun')) {
-                    for (let i = 0; i < screenWidth + screenHeight; i++) {
-                        switch (direction) {
-                            case 'north':
-                                if (enemyPosition.x === this.x - Math.floor(i / 2) && enemyPosition.y === this.y - i) {
-                                    enemiesInLine[1].push(enemy);
-                                }
-                                if (enemyPosition.x === this.x + Math.floor(i / 2) && enemyPosition.y === this.y - i) {
-                                    enemiesInLine[2].push(enemy);
-                                }
-                                break;
-                            case 'south':
-                                if (enemyPosition.x === this.x + Math.floor(i / 2) && enemyPosition.y === this.y + i) {
-                                    enemiesInLine[1].push(enemy);
-                                }
-                                if (enemyPosition.x === this.x - Math.floor(i / 2) && enemyPosition.y === this.y + i) {
-                                    enemiesInLine[2].push(enemy);
-                                }
-                                break;
-                            case 'west':
-                                if (enemyPosition.x === this.x - i && enemyPosition.y === this.y + Math.floor(i / 2)) {
-                                    enemiesInLine[1].push(enemy);
-                                }
-                                if (enemyPosition.x === this.x - i && enemyPosition.y === this.y - Math.floor(i / 2)) {
-                                    enemiesInLine[2].push(enemy);
-                                }
-                                break;
-                            case 'east':
-                                if (enemyPosition.x === this.x + i && enemyPosition.y === this.y - Math.floor(i / 2)) {
-                                    enemiesInLine[1].push(enemy);
-                                }
-                                if (enemyPosition.x === this.x + i && enemyPosition.y === this.y + Math.floor(i / 2)) {
-                                    enemiesInLine[2].push(enemy);
-                                }
-                                break;
-                        }
+            if (this.getWeapon() === 'shotgun') {
+                for (let i = 0; i < screenWidth + screenHeight; i++) {
+                    switch (direction) {
+                        case 'north':
+                            if (enemyPosition.x === this.x - Math.floor(i / 2) && enemyPosition.y === this.y - i) {
+                                enemiesInLine[1].push(enemy);
+                            }
+                            if (enemyPosition.x === this.x + Math.floor(i / 2) && enemyPosition.y === this.y - i) {
+                                enemiesInLine[2].push(enemy);
+                            }
+                            break;
+                        case 'south':
+                            if (enemyPosition.x === this.x + Math.floor(i / 2) && enemyPosition.y === this.y + i) {
+                                enemiesInLine[1].push(enemy);
+                            }
+                            if (enemyPosition.x === this.x - Math.floor(i / 2) && enemyPosition.y === this.y + i) {
+                                enemiesInLine[2].push(enemy);
+                            }
+                            break;
+                        case 'west':
+                            if (enemyPosition.x === this.x - i && enemyPosition.y === this.y + Math.floor(i / 2)) {
+                                enemiesInLine[1].push(enemy);
+                            }
+                            if (enemyPosition.x === this.x - i && enemyPosition.y === this.y - Math.floor(i / 2)) {
+                                enemiesInLine[2].push(enemy);
+                            }
+                            break;
+                        case 'east':
+                            if (enemyPosition.x === this.x + i && enemyPosition.y === this.y - Math.floor(i / 2)) {
+                                enemiesInLine[1].push(enemy);
+                            }
+                            if (enemyPosition.x === this.x + i && enemyPosition.y === this.y + Math.floor(i / 2)) {
+                                enemiesInLine[2].push(enemy);
+                            }
+                            break;
                     }
                 }
             }
@@ -404,22 +378,28 @@ export default class Player {
                 continue;
             }
 
+            let distance = 0;
+
             switch (direction) {
                 case 'north':
-                    this.lastAttack.distance[i] = this.y - enemiesInLine[i][0].getPosition().y;
+                    distance = this.y - enemiesInLine[i][0].getPosition().y;
                     break;
                 case 'south':
-                    this.lastAttack.distance[i] = enemiesInLine[i][0].getPosition().y - this.y;
+                    distance = enemiesInLine[i][0].getPosition().y - this.y;
                     break;
                 case 'west':
-                    this.lastAttack.distance[i] = this.x - enemiesInLine[i][0].getPosition().x;
+                    distance = this.x - enemiesInLine[i][0].getPosition().x;
                     break;
                 case 'east':
-                    this.lastAttack.distance[i] = enemiesInLine[i][0].getPosition().x - this.x;
+                    distance = enemiesInLine[i][0].getPosition().x - this.x;
                     break;
             }
-            enemiesInLine[i][0].die();
-            this.killCount++;
+
+            if ((this.getWeapon() === 'katana' && distance <= 1) || (this.getWeapon() === 'handgun' && distance < 4) || (this.getWeapon() === 'shotgun' && distance < 6)) {
+                this.lastAttack.distance[i] = distance;
+                enemiesInLine[i][0].die();
+                this.killCount++;
+            }
         }
     }
 
