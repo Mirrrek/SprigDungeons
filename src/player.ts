@@ -6,7 +6,7 @@ import play from '@/audio';
 const powerUps = {
     shield: 10000,
     sight: 30000,
-    gun: -1,
+    handgun: -1,
     shotgun: -1
 }
 
@@ -59,10 +59,10 @@ export default class Player {
             addSprite(this.x + (this.lastAttack.direction === 'east' ? 1 : this.lastAttack.direction === 'west' ? -1 : 0),
                 this.y + (this.lastAttack.direction === 'south' ? 1 : this.lastAttack.direction === 'north' ? -1 : 0),
                 getSprite(this.powerUps.some((p) => p.type === 'shotgun') ? `muzzle-flash-3way-${this.lastAttack.direction}` :
-                    this.powerUps.some((p) => p.type === 'gun') ? `muzzle-flash-${this.lastAttack.direction}` :
+                    this.powerUps.some((p) => p.type === 'handgun') ? `muzzle-flash-${this.lastAttack.direction}` :
                         `katana-swoosh-${Date.now() - this.lastAttack.time < 50 ? '0' : '1'}-${this.lastAttack.direction}`));
 
-            if (this.powerUps.some((p) => p.type === 'gun' || p.type === 'shotgun')) {
+            if (this.powerUps.some((p) => p.type === 'handgun' || p.type === 'shotgun')) {
                 for (let i = 0; i < 3; i++) {
                     if (!this.powerUps.some((p) => p.type === 'shotgun') && i > 0) break;
 
@@ -248,8 +248,8 @@ export default class Player {
                         this.health = 4;
                     }
                     break;
-                case 'gun':
-                    this.powerUps.push({ type: 'gun', time: Date.now() });
+                case 'handgun':
+                    this.powerUps.push({ type: 'handgun', time: Date.now() });
                     break;
                 case 'shotgun':
                     this.powerUps.push({ type: 'shotgun', time: Date.now() });
@@ -288,7 +288,7 @@ export default class Player {
         this.direction = direction;
         this.lastAttack = { time: Date.now(), direction, distance: [-1, -1, -1] }
 
-        play(this.powerUps.some((p) => p.type === 'shotgun') ? 'shoot-shotgun' : this.powerUps.some((p) => p.type === 'gun') ? 'shoot-gun' : 'katana-swoosh');
+        play(this.powerUps.some((p) => p.type === 'shotgun') ? 'shoot-shotgun' : this.powerUps.some((p) => p.type === 'handgun') ? 'shoot-handgun' : 'katana-swoosh');
 
         let enemiesInLine: [Enemy[], Enemy[], Enemy[]] = [[], [], []];
 
@@ -296,7 +296,7 @@ export default class Player {
             if (enemy.getState() !== 'spawning' && enemy.getState() !== 'active') return;
 
             const enemyPosition = enemy.getPosition();
-            if (!this.powerUps.some((p) => p.type === 'gun' || p.type === 'shotgun')) {
+            if (!this.powerUps.some((p) => p.type === 'handgun' || p.type === 'shotgun')) {
                 switch (direction) {
                     case 'north':
                         if (enemyPosition.x === this.x && (enemyPosition.y === this.y || enemyPosition.y === this.y - 1)) {
@@ -423,8 +423,8 @@ export default class Player {
         }
     }
 
-    getWeapon(): 'katana' | 'gun' | 'shotgun' {
-        return this.powerUps.some((p) => p.type === 'shotgun') ? 'shotgun' : this.powerUps.some((p) => p.type === 'gun') ? 'gun' : 'katana';
+    getWeapon(): 'katana' | 'handgun' | 'shotgun' {
+        return this.powerUps.some((p) => p.type === 'shotgun') ? 'shotgun' : this.powerUps.some((p) => p.type === 'handgun') ? 'handgun' : 'katana';
     }
 
     getKillCount(): number {

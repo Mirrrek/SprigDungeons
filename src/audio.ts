@@ -22,7 +22,7 @@ const tunes = [
 1125`
     },
     {
-        name: 'shoot-gun', tune: `
+        name: 'shoot-handgun', tune: `
 50: E4-50 + F4-50 + C4-50 + D4-50 + E5/50,
 50: F4-50 + D4-50 + E5/50,
 1500`
