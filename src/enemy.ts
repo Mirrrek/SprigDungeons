@@ -42,15 +42,15 @@ export default class Enemy {
     }
 
     render(time: number): void {
-        if (this.spawnTime === 0) {
+        if (this.getState() === 'waiting') {
             return;
         }
 
         if (this.dieTime !== null) {
             if (Date.now() - this.dieTime < 500) {
-                addSprite(this.x, this.y, getSprite('enemy-death-0'));
+                addSprite(this.x, this.y, getSprite(this.boss ? 'boss-death-0' : 'enemy-death-0'));
             } else {
-                addSprite(this.x, this.y, getSprite('enemy-death-1'));
+                addSprite(this.x, this.y, getSprite(this.boss ? 'boss-death-1' : 'enemy-death-1'));
                 if (this.loot !== null) {
                     const step = Math.floor(time / 500) % 2 === 0 ? '0' : '1';
                     addSprite(this.x, this.y, getSprite(`loot-${this.loot}-${step}`));
@@ -60,10 +60,15 @@ export default class Enemy {
         }
 
         const step = Math.floor(time / 500) % 2 === 0 ? '0' : '1';
-        addSprite(this.x, this.y, getSprite(`enemy-${step}-${this.direction}`));
+        if (this.boss) {
+            addSprite(this.x, this.y - 1, getSprite(`boss-${step}-0-${this.direction}`));
+            addSprite(this.x, this.y, getSprite(`boss-${step}-1-${this.direction}`));
+        } else {
+            addSprite(this.x, this.y, getSprite(`enemy-${step}-${this.direction}`));
+        }
 
         const timeSinceSpawn = Date.now() - this.spawnTime;
-        if (timeSinceSpawn < 1000) {
+        if (!this.boss && timeSinceSpawn < 1000) {
             if (timeSinceSpawn < 500) {
                 addSprite(this.x, this.y, getSprite('enemy-spawn-0'));
             } else if (timeSinceSpawn < 750) {
