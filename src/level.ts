@@ -191,7 +191,7 @@ export default class Level {
                 addSprite(doorPosition + doorWidth, 0, getSprite('level-wall-cap-south'));
                 if (!open) {
                     for (let i = doorPosition; i < doorPosition + doorWidth; i++) {
-                        addSprite(i, 0, getSprite(i === doorPosition ? 'level-door-cap-south' : i === doorPosition + doorWidth - 1 ? 'level-door-cap-east' : 'level-door-south'));
+                        addSprite(i, 0, getSprite('level-door-south'));
                     }
                 }
             } break;
@@ -204,7 +204,7 @@ export default class Level {
                 addSprite(0, doorPosition + doorWidth, getSprite('level-wall-cap-north'));
                 if (!open) {
                     for (let i = doorPosition; i < doorPosition + doorWidth; i++) {
-                        addSprite(0, i, getSprite(i === doorPosition ? 'level-door-cap-north' : i === doorPosition + doorWidth - 1 ? 'level-door-cap-east' : 'level-door-east'));
+                        addSprite(0, i, getSprite('level-door-east'));
                     }
                 }
             } break;
@@ -217,7 +217,7 @@ export default class Level {
                 addSprite(doorPosition + doorWidth, screenHeight - 1, getSprite('level-wall-cap-west'));
                 if (!open) {
                     for (let i = doorPosition; i < doorPosition + doorWidth; i++) {
-                        addSprite(i, screenHeight - 1, getSprite(i === doorPosition ? 'level-door-cap-west' : i === doorPosition + doorWidth - 1 ? 'level-door-cap-north' : 'level-door-north'));
+                        addSprite(i, screenHeight - 1, getSprite('level-door-north'));
                     }
                 }
             } break;
@@ -230,7 +230,7 @@ export default class Level {
                 addSprite(screenWidth - 1, doorPosition + doorWidth, getSprite('level-wall-cap-west'));
                 if (!open) {
                     for (let i = doorPosition; i < doorPosition + doorWidth; i++) {
-                        addSprite(screenWidth - 1, i, getSprite(i === doorPosition ? 'level-door-cap-west' : i === doorPosition + doorWidth - 1 ? 'level-door-cap-south' : 'level-door-west'));
+                        addSprite(screenWidth - 1, i, getSprite('level-door-west'));
                     }
                 }
             } break;
