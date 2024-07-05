@@ -3,8 +3,8 @@ import getSprite from '@/sprites';
 
 const loot = [
     { name: 'apple', chance: 0.05 },
-    { name: 'shield-potion', chance: 0.015 },
-    { name: 'sight-potion', chance: 0.01 },
+    { name: 'shield-potion', chance: 0.02 },
+    { name: 'sight-potion', chance: 0.015 },
     { name: 'shotgun', chance: 0.0005 }
 ] as const;
 
