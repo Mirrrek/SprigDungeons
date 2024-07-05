@@ -5,7 +5,7 @@ import input from '@/input';
 import play, { setSfx } from '@/audio';
 import menu from '@/menu';
 
-let gameState: 'start-menu' | 'difficulty-menu' | 'game' | 'dead';
+let gameState: 'start-menu' | 'difficulty-menu' | 'game' | 'dead' | 'summary';
 let gameSettings: { difficulty: 'normal' | 'hard' | 'impossible', music: boolean, sfx: boolean };
 let startMenuOption: 'music' | 'sfx' | 'start';
 
@@ -94,6 +94,9 @@ function loop(time: number): void {
             break;
         case 'dead':
             deadLoop(time);
+            break;
+        case 'summary':
+            summaryLoop(time);
             break;
     }
 }
@@ -239,7 +242,24 @@ function deadLoop(time: number): void {
     menu([{ text: 'you died!', color: 'RED' }]);
 
     if ((input.primary.up() || input.primary.down() || input.primary.left() || input.primary.right()) && Date.now() - deathTime > 1000) {
+        gameState = 'summary';
         clearText();
+        play('menu-select');
+    }
+}
+
+function summaryLoop(time: number): void {
+    getAll().forEach((sprite) => sprite.remove());
+    currentLevel.render(time);
+    player.render(time);
+    menu([
+        { text: `level ${levelsConquered + 1}\n`, color: 'BLACK' },
+        { text: `${gameSettings.difficulty}\n\n`, color: 'LIGHT_GRAY' },
+        { text: 'kills: ', color: 'RED' }, { text: `${player.getKillCount().toString().padStart(5)}\n`, color: 'DARK_GRAY' },
+        { text: 'apples:', color: 'GREEN' }, { text: `${player.getApplesCollected().toString().padStart(5)}`, color: 'DARK_GRAY' }
+    ]);
+
+    if (input.primary.up() || input.primary.down() || input.primary.left() || input.primary.right()) {
         musicPlayer.end();
         init();
     }

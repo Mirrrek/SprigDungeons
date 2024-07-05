@@ -19,6 +19,8 @@ export default class Player {
     private lastShot: { time: number, distance: [number, number, number] };
     private powerUps: { type: PowerUp, time: number }[];
     private dieTime: number | null;
+    private killCount: number;
+    private applesCollected: number;
 
     onEnterLevel: ((direction: Direction) => void) | null = null;
     onDeath: (() => void) | null = null;
@@ -30,6 +32,8 @@ export default class Player {
         this.lastShot = { time: 0, distance: [-1, -1, -1] };
         this.powerUps = [];
         this.dieTime = null;
+        this.killCount = 0;
+        this.applesCollected = 0;
     }
 
     render(time: number): void {
@@ -216,6 +220,9 @@ export default class Player {
             play('pickup');
 
             switch (loot) {
+                case 'apple':
+                    this.applesCollected++;
+                    break;
                 case 'shield-potion':
                     this.powerUps.push({ type: 'shield', time: Date.now() });
                     break;
@@ -365,7 +372,16 @@ export default class Player {
                     break;
             }
             enemiesInLine[i][0].die();
+            this.killCount++;
         }
+    }
+
+    getKillCount(): number {
+        return this.killCount;
+    }
+
+    getApplesCollected(): number {
+        return this.applesCollected;
     }
 
     getPosition(): { x: number, y: number } {
