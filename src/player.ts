@@ -401,6 +401,7 @@ export default class Player {
                 this.lastAttack.distance[i] = distance;
                 enemiesInLine[i][0].die();
                 this.killCount++;
+                play('hit');
             }
         }
     }
