@@ -86,7 +86,7 @@ export default class Enemy {
 
         this.lastMove = { time: Date.now(), attacked: true };
 
-        if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1) {
+        if (dx === 0 && dy === 0) {
             return;
         }
 

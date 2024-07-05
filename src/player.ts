@@ -17,6 +17,7 @@ export default class Player {
     private y: number;
 
     private direction: Direction;
+    private health: number;
     private lastAttack: { time: number, direction: Direction, distance: [number, number, number] };
     private powerUps: { type: PowerUp, time: number }[];
     private dieTime: number | null;
@@ -30,6 +31,7 @@ export default class Player {
         this.x = Math.floor(screenWidth / 2);
         this.y = Math.floor(screenHeight / 2);
         this.direction = 'east';
+        this.health = 4;
         this.lastAttack = { time: 0, direction: 'north', distance: [-1, -1, -1] };
         this.powerUps = [];
         this.dieTime = null;
@@ -38,6 +40,9 @@ export default class Player {
     }
 
     render(time: number): void {
+        addSprite(screenWidth - 3, screenHeight - 1, getSprite(this.health >= 4 ? 'heart-0' : this.health === 3 ? 'heart-1' : 'heart-2'));
+        addSprite(screenWidth - 2, screenHeight - 1, getSprite(this.health >= 2 ? 'heart-0' : this.health === 1 ? 'heart-1' : 'heart-2'));
+
         if (this.dieTime !== null) {
             if (Date.now() - this.dieTime < 500) {
                 addSprite(this.x, this.y, getSprite('player-death-0'));
@@ -202,13 +207,17 @@ export default class Player {
         if (!this.powerUps.some((p) => p.type === 'shield') && enemies.some((enemy) => {
             if (enemy.getState() !== 'active' || !enemy.hasAttacked()) return false;
             const enemyPosition = enemy.getPosition();
-            return Math.abs(enemyPosition.x - this.x) <= 1 && Math.abs(enemyPosition.y - this.y) <= 1;
+            return enemyPosition.x == this.x && enemyPosition.y == this.y;
         })) {
-            this.dieTime = Date.now();
-            if (this.onDeath !== null) {
-                this.onDeath();
+            this.health--;
+            play('hurt');
+            if (this.health <= 0) {
+                this.dieTime = Date.now();
+                if (this.onDeath !== null) {
+                    this.onDeath();
+                }
+                return;
             }
-            return;
         }
 
         const lootEnemy = enemies.find((enemy) => {
