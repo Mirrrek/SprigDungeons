@@ -417,8 +417,9 @@ export default class Player {
 
             if (distance <= weaponRange) {
                 this.lastAttack.distance[i] = distance;
-                enemiesInLine[i][0].die();
-                this.killCount++;
+                if (enemiesInLine[i][0].hit()) {
+                    this.killCount++;
+                }
                 play('hit');
             }
         }

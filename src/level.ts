@@ -4,6 +4,7 @@ import Enemy from '@/enemy';
 import play from '@/audio';
 
 export default class Level {
+    private type: 'normal' | 'boss';
     private state: 'waiting' | 'active' | 'conquered';
 
     private readonly previousLevel: { level: Level, direction: Exclude<Direction, 'east'> } | null;
@@ -14,9 +15,10 @@ export default class Level {
 
     private readonly map: string;
 
-    private readonly enemies: [Enemy[], Enemy[], Enemy[]];
-    private currentWave: 0 | 1 | 2;
+    private readonly enemies: Enemy[][];
+    private currentWave: number;
     private newWaveTime: number;
+    private lastBossWave: number;
 
     private getLevelsConquered: () => number;
     private onLevelConquered: (() => void) | null = null;
@@ -25,6 +27,7 @@ export default class Level {
         this.getLevelsConquered = getLevelsConquered;
         this.previousLevel = previousLevel;
 
+        this.type = getLevelsConquered() % 4 === 3 ? 'boss' : 'normal';
         this.state = 'waiting';
 
         this.northLevel = null;
@@ -32,16 +35,33 @@ export default class Level {
         this.southLevel = null;
 
         this.map = '';
+        const carpetPositionX = Math.floor(screenWidth / 2 - 3);
+        const carpetPositionY = Math.floor(screenHeight / 2 - 3);
         for (let y = 0; y < screenHeight; y++) {
             this.map += '\n';
             for (let x = 0; x < screenWidth; x++) {
-                this.map += getSprite(Math.random() < 0.25 ? 'level-floor-1' : 'level-floor-0');
+                if (this.type === 'boss' && x >= carpetPositionX && x < carpetPositionX + 6 && y >= carpetPositionY && y < carpetPositionY + 6) {
+                    if (x === carpetPositionX) {
+                        this.map += getSprite(y === carpetPositionY ? 'level-carpet-corner-south' : y === carpetPositionY + 5 ? 'level-carpet-corner-east' : 'level-carpet-edge-east');
+                    } else if (x === carpetPositionX + 5) {
+                        this.map += getSprite(y === carpetPositionY ? 'level-carpet-corner-west' : y === carpetPositionY + 5 ? 'level-carpet-corner-north' : 'level-carpet-edge-west');
+                    } else if (y === carpetPositionY) {
+                        this.map += getSprite('level-carpet-edge-south');
+                    } else if (y === carpetPositionY + 5) {
+                        this.map += getSprite('level-carpet-edge-north');
+                    } else {
+                        this.map += getSprite('level-carpet');
+                    }
+                } else {
+                    this.map += getSprite(Math.random() < 0.25 ? 'level-floor-1' : 'level-floor-0');
+                }
             }
         }
 
-        this.enemies = [[], [], []];
+        this.enemies = [];
         this.currentWave = 0;
         this.newWaveTime = 0;
+        this.lastBossWave = 0;
     }
 
     generateChildLevels(): void {
@@ -92,10 +112,17 @@ export default class Level {
     startFight(onLevelConquered: () => void): void {
         this.onLevelConquered = onLevelConquered;
 
-        this.enemies[0] = new Array(3 + Math.floor(this.getLevelsConquered() / 4)).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)]));
-        this.enemies[1] = new Array(5 + Math.floor(this.getLevelsConquered() / 4)).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)]));
-        this.enemies[2] = new Array(7 + Math.floor(this.getLevelsConquered() / 4)).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)]));
-
+        switch (this.type) {
+            case 'normal':
+                this.enemies.push(new Array(3 + Math.floor(this.getLevelsConquered() / 4)).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)])));
+                this.enemies.push(new Array(5 + Math.floor(this.getLevelsConquered() / 4)).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)])));
+                this.enemies.push(new Array(7 + Math.floor(this.getLevelsConquered() / 4)).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)])));
+                break;
+            case 'boss':
+                this.enemies.push([new Enemy(Math.floor(screenWidth / 2), Math.floor(screenHeight / 2), this.previousLevel?.direction ?? 'north', this.getLevelsConquered() * 2 + 20)]);
+                this.lastBossWave = Date.now();
+                break;
+        }
         this.state = 'active';
         this.enemies[0].forEach((enemy) => enemy.spawn());
         play('level-start');
@@ -106,9 +133,15 @@ export default class Level {
             return;
         }
 
+        if (this.type === 'boss' && Date.now() - this.lastBossWave > 10000 && this.enemies[0][0].getState() !== 'dead') {
+            this.lastBossWave = Date.now();
+            this.enemies[0].push(...new Array(3 + Math.floor(this.getLevelsConquered() / 4)).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)])));
+            this.enemies[0].forEach((enemy) => enemy.getState() === 'waiting' && enemy.spawn());
+        }
+
         if (this.enemies[this.currentWave].every((enemy) => enemy.getState() === 'dead')) {
             if (this.newWaveTime === 0) {
-                if (this.currentWave === 2) {
+                if (this.currentWave === this.enemies.length - 1) {
                     this.state = 'conquered';
                     play('level-cleared');
                     if (this.onLevelConquered !== null) {

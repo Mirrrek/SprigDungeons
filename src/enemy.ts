@@ -14,17 +14,22 @@ const loot = [
 export type Loot = typeof loot[number]['name'];
 
 export default class Enemy {
+    private boss: boolean;
+
     private x: number;
     private y: number;
 
     private direction: Direction;
+    private health: number;
     private spawnTime: number;
     private lastMove: { time: number, attacked: boolean };
     private dieTime: number | null;
 
     private loot: Loot | null;
 
-    constructor(x: number, y: number, direction: Direction) {
+    constructor(x: number, y: number, direction: Direction, bossHealth: number = -1) {
+        this.boss = bossHealth > 0;
+        this.health = this.boss ? bossHealth : 1;
         this.x = x;
         this.y = y;
         this.direction = direction;
@@ -33,7 +38,7 @@ export default class Enemy {
         this.dieTime = null;
 
         const randomLoot = loot[Math.floor(Math.random() * loot.length)];
-        this.loot = Math.random() < randomLoot.chance * loot.length ? randomLoot.name : null;
+        this.loot = (this.boss || Math.random() < randomLoot.chance * loot.length) ? randomLoot.name : null;
     }
 
     render(time: number): void {
@@ -101,12 +106,19 @@ export default class Enemy {
         }
     }
 
-    die(): void {
+    hit(): boolean {
         if (this.dieTime !== null) {
-            return;
+            return true;
         }
 
-        this.dieTime = Date.now();
+        this.health--;
+
+        if (this.health <= 0) {
+            this.dieTime = Date.now();
+            return true;
+        }
+
+        return false;
     }
 
     hasAttacked(): boolean {
