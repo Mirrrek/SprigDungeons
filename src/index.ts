@@ -216,16 +216,16 @@ function gameLoop(time: number): void {
     }
 
     if (input.secondary.up()) {
-        player.shoot('north', currentLevel.getEnemies());
+        player.attack('north', currentLevel.getEnemies());
     }
     if (input.secondary.left()) {
-        player.shoot('west', currentLevel.getEnemies());
+        player.attack('west', currentLevel.getEnemies());
     }
     if (input.secondary.down()) {
-        player.shoot('south', currentLevel.getEnemies());
+        player.attack('south', currentLevel.getEnemies());
     }
     if (input.secondary.right()) {
-        player.shoot('east', currentLevel.getEnemies());
+        player.attack('east', currentLevel.getEnemies());
     }
 
     currentLevel.update(player.getPosition(), calculateEnemySpeed());

@@ -283,7 +283,9 @@ export default class Player {
         }
     }
 
-    shoot(direction: Direction, enemies: Enemy[]): void {
+    attack(direction: Direction, enemies: Enemy[]): void {
+        if (this.getWeapon() === 'katana' && Date.now() - this.lastAttack.time < 250) return;
+
         this.direction = direction;
         this.lastAttack = { time: Date.now(), direction, distance: this.getWeapon() === 'katana' ? [-1, -1, -1] : this.getWeapon() === 'handgun' ? [4, -1, -1] : [6, 6, 6] };
 
