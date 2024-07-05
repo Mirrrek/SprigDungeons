@@ -146,19 +146,19 @@ export default class Level {
 
         for (let x = 0; x < screenWidth; x++) {
             if (x === 0) {
-                addSprite(x, 0, getSprite('level-floor-corner-south'));
-                addSprite(x, screenHeight - 1, getSprite('level-floor-corner-east'));
+                addSprite(x, 0, getSprite('level-wall-corner-south'));
+                addSprite(x, screenHeight - 1, getSprite('level-wall-corner-east'));
             } else if (x === screenWidth - 1) {
-                addSprite(x, 0, getSprite('level-floor-corner-west'));
-                addSprite(x, screenHeight - 1, getSprite('level-floor-corner-north'));
+                addSprite(x, 0, getSprite('level-wall-corner-west'));
+                addSprite(x, screenHeight - 1, getSprite('level-wall-corner-north'));
             } else {
-                addSprite(x, 0, getSprite('level-floor-edge-south'));
-                addSprite(x, screenHeight - 1, getSprite('level-floor-edge-north'));
+                addSprite(x, 0, getSprite('level-wall-edge-south'));
+                addSprite(x, screenHeight - 1, getSprite('level-wall-edge-north'));
             }
         }
         for (let y = 1; y < screenHeight - 1; y++) {
-            addSprite(0, y, getSprite('level-floor-edge-east'));
-            addSprite(screenWidth - 1, y, getSprite('level-floor-edge-west'));
+            addSprite(0, y, getSprite('level-wall-edge-east'));
+            addSprite(screenWidth - 1, y, getSprite('level-wall-edge-west'));
         }
 
         if (this.previousLevel !== null) {
@@ -184,38 +184,54 @@ export default class Level {
         switch (direction) {
             case 'north': {
                 const doorPosition = Math.floor(screenWidth / 2 - doorWidth / 2);
-                getAll(getSprite('level-floor-edge-south'))
-                    .filter((sprite) => sprite.x >= doorPosition && sprite.x < doorPosition + doorWidth)
+                getAll(getSprite('level-wall-edge-south'))
+                    .filter((sprite) => sprite.x >= doorPosition - 1 && sprite.x < doorPosition + doorWidth + 1)
                     .forEach((sprite) => sprite.remove());
-                for (let i = doorPosition; i < doorPosition + doorWidth; i++) {
-                    addSprite(i, 0, getSprite(open ? 'level-floor-0' : 'level-door-south'));
+                addSprite(doorPosition - 1, 0, getSprite('level-wall-cap-east'));
+                addSprite(doorPosition + doorWidth, 0, getSprite('level-wall-cap-south'));
+                if (!open) {
+                    for (let i = doorPosition; i < doorPosition + doorWidth; i++) {
+                        addSprite(i, 0, getSprite(i === doorPosition ? 'level-door-cap-south' : i === doorPosition + doorWidth - 1 ? 'level-door-cap-east' : 'level-door-south'));
+                    }
                 }
             } break;
             case 'west': {
                 const doorPosition = Math.floor(screenHeight / 2 - doorWidth / 2);
-                getAll(getSprite('level-floor-edge-east'))
-                    .filter((sprite) => sprite.y >= doorPosition && sprite.y < doorPosition + doorWidth)
+                getAll(getSprite('level-wall-edge-east'))
+                    .filter((sprite) => sprite.y >= doorPosition - 1 && sprite.y < doorPosition + doorWidth + 1)
                     .forEach((sprite) => sprite.remove());
-                for (let i = doorPosition; i < doorPosition + doorWidth; i++) {
-                    addSprite(0, i, getSprite(open ? 'level-floor-0' : 'level-door-east'));
+                addSprite(0, doorPosition - 1, getSprite('level-wall-cap-east'));
+                addSprite(0, doorPosition + doorWidth, getSprite('level-wall-cap-north'));
+                if (!open) {
+                    for (let i = doorPosition; i < doorPosition + doorWidth; i++) {
+                        addSprite(0, i, getSprite(i === doorPosition ? 'level-door-cap-north' : i === doorPosition + doorWidth - 1 ? 'level-door-cap-east' : 'level-door-east'));
+                    }
                 }
             } break;
             case 'south': {
                 const doorPosition = Math.floor(screenWidth / 2 - doorWidth / 2);
-                getAll(getSprite('level-floor-edge-north'))
-                    .filter((sprite) => sprite.x >= doorPosition && sprite.x < doorPosition + doorWidth)
+                getAll(getSprite('level-wall-edge-north'))
+                    .filter((sprite) => sprite.x >= doorPosition - 1 && sprite.x < doorPosition + doorWidth + 1)
                     .forEach((sprite) => sprite.remove());
-                for (let i = doorPosition; i < doorPosition + doorWidth; i++) {
-                    addSprite(i, screenHeight - 1, getSprite(open ? 'level-floor-0' : 'level-door-north'));
+                addSprite(doorPosition - 1, screenHeight - 1, getSprite('level-wall-cap-north'));
+                addSprite(doorPosition + doorWidth, screenHeight - 1, getSprite('level-wall-cap-west'));
+                if (!open) {
+                    for (let i = doorPosition; i < doorPosition + doorWidth; i++) {
+                        addSprite(i, screenHeight - 1, getSprite(i === doorPosition ? 'level-door-cap-west' : i === doorPosition + doorWidth - 1 ? 'level-door-cap-north' : 'level-door-north'));
+                    }
                 }
             } break;
             case 'east': {
                 const doorPosition = Math.floor(screenHeight / 2 - doorWidth / 2);
-                getAll(getSprite('level-floor-edge-west'))
-                    .filter((sprite) => sprite.y >= doorPosition && sprite.y < doorPosition + doorWidth)
+                getAll(getSprite('level-wall-edge-west'))
+                    .filter((sprite) => sprite.y >= doorPosition - 1 && sprite.y < doorPosition + doorWidth + 1)
                     .forEach((sprite) => sprite.remove());
-                for (let i = doorPosition; i < doorPosition + doorWidth; i++) {
-                    addSprite(screenWidth - 1, i, getSprite(open ? 'level-floor-0' : 'level-door-west'));
+                addSprite(screenWidth - 1, doorPosition - 1, getSprite('level-wall-cap-south'));
+                addSprite(screenWidth - 1, doorPosition + doorWidth, getSprite('level-wall-cap-west'));
+                if (!open) {
+                    for (let i = doorPosition; i < doorPosition + doorWidth; i++) {
+                        addSprite(screenWidth - 1, i, getSprite(i === doorPosition ? 'level-door-cap-west' : i === doorPosition + doorWidth - 1 ? 'level-door-cap-south' : 'level-door-west'));
+                    }
                 }
             } break;
         }
