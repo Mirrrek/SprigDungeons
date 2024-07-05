@@ -120,7 +120,6 @@ export default class Level {
                 break;
             case 'boss':
                 this.enemies.push([new Enemy(Math.floor(screenWidth / 2), Math.floor(screenHeight / 2), this.previousLevel?.direction ?? 'north', this.getLevelsConquered() * 2 + 20)]);
-                this.lastBossWave = Date.now();
                 break;
         }
         this.state = 'active';
