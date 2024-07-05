@@ -5,9 +5,7 @@ import play from '@/audio';
 
 const powerUps = {
     shield: 10000,
-    sight: 30000,
-    handgun: -1,
-    shotgun: -1
+    sight: 30000
 }
 
 export type PowerUp = keyof typeof powerUps;
@@ -20,6 +18,7 @@ export default class Player {
     private health: number;
     private lastAttack: { time: number, direction: Direction, distance: [number, number, number] };
     private powerUps: { type: PowerUp, time: number }[];
+    private ammo: { handgun: number, shotgun: number };
     private dieTime: number | null;
     private killCount: number;
     private applesCollected: number;
@@ -34,6 +33,7 @@ export default class Player {
         this.health = 4;
         this.lastAttack = { time: 0, direction: 'north', distance: [-1, -1, -1] };
         this.powerUps = [];
+        this.ammo = { handgun: 0, shotgun: 0 };
         this.dieTime = null;
         this.killCount = 0;
         this.applesCollected = 0;
@@ -42,6 +42,9 @@ export default class Player {
     render(time: number): void {
         addSprite(screenWidth - 3, screenHeight - 1, getSprite(this.health >= 4 ? 'heart-0' : this.health === 3 ? 'heart-1' : 'heart-2'));
         addSprite(screenWidth - 2, screenHeight - 1, getSprite(this.health >= 2 ? 'heart-0' : this.health === 1 ? 'heart-1' : 'heart-2'));
+
+        addSprite(0, screenHeight - 1, getSprite(this.getActiveWeapon() === 'katana' ? 'ammo-0-0' : this.getActiveWeapon() === 'handgun' ? `ammo-${Math.floor(this.ammo.handgun / 10) as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9}-0` : `ammo-${Math.floor(this.ammo.shotgun / 10) as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9}-0`));
+        addSprite(1, screenHeight - 1, getSprite(this.getActiveWeapon() === 'katana' ? 'ammo-0-1' : this.getActiveWeapon() === 'handgun' ? `ammo-${this.ammo.handgun % 10 as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9}-1` : `ammo-${this.ammo.shotgun % 10 as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9}-1`));
 
         if (this.dieTime !== null) {
             if (Date.now() - this.dieTime < 500) {
@@ -58,12 +61,12 @@ export default class Player {
         if (Date.now() - this.lastAttack.time < 100) {
             addSprite(this.x + (this.lastAttack.direction === 'east' ? 1 : this.lastAttack.direction === 'west' ? -1 : 0),
                 this.y + (this.lastAttack.direction === 'south' ? 1 : this.lastAttack.direction === 'north' ? -1 : 0),
-                getSprite(this.getWeapon() === 'katana' ? `katana-swoosh-${Date.now() - this.lastAttack.time < 50 ? '0' : '1'}-${this.lastAttack.direction}` :
-                    this.getWeapon() === 'handgun' ? `muzzle-flash-${this.lastAttack.direction}` : `muzzle-flash-3way-${this.lastAttack.direction}`));
+                getSprite(this.getActiveWeapon() === 'katana' ? `katana-swoosh-${Date.now() - this.lastAttack.time < 50 ? '0' : '1'}-${this.lastAttack.direction}` :
+                    this.getActiveWeapon() === 'handgun' ? `muzzle-flash-${this.lastAttack.direction}` : `muzzle-flash-3way-${this.lastAttack.direction}`));
 
-            if (this.getWeapon() !== 'katana') {
+            if (this.getActiveWeapon() !== 'katana') {
                 for (let i = 0; i < 3; i++) {
-                    if (this.getWeapon() !== 'shotgun' && i > 0) break;
+                    if (this.getActiveWeapon() !== 'shotgun' && i > 0) break;
 
                     for (let j = 0; j < screenWidth + screenHeight; j++) {
                         if (this.lastAttack.distance[i] !== -1 && j > this.lastAttack.distance[i] - 3) break;
@@ -248,10 +251,16 @@ export default class Player {
                     }
                     break;
                 case 'handgun':
-                    this.powerUps.push({ type: 'handgun', time: Date.now() });
+                    this.ammo.handgun += 24;
+                    if (this.ammo.handgun > 99) {
+                        this.ammo.handgun = 99;
+                    }
                     break;
                 case 'shotgun':
-                    this.powerUps.push({ type: 'shotgun', time: Date.now() });
+                    this.ammo.shotgun += 16;
+                    if (this.ammo.shotgun > 99) {
+                        this.ammo.shotgun = 99;
+                    }
                     break;
             }
         }
@@ -284,12 +293,20 @@ export default class Player {
     }
 
     attack(direction: Direction, enemies: Enemy[]): void {
-        if (this.getWeapon() === 'katana' && Date.now() - this.lastAttack.time < 250) return;
+        if (this.getActiveWeapon() === 'katana' && Date.now() - this.lastAttack.time < 250) return;
+
+        if (this.getActiveWeapon() === 'handgun') {
+            this.ammo.handgun--;
+        }
+
+        if (this.getActiveWeapon() === 'shotgun') {
+            this.ammo.shotgun--;
+        }
 
         this.direction = direction;
-        this.lastAttack = { time: Date.now(), direction, distance: this.getWeapon() === 'katana' ? [-1, -1, -1] : this.getWeapon() === 'handgun' ? [4, -1, -1] : [6, 6, 6] };
+        this.lastAttack = { time: Date.now(), direction, distance: this.getActiveWeapon() === 'katana' ? [-1, -1, -1] : this.getActiveWeapon() === 'handgun' ? [4, -1, -1] : [6, 6, 6] };
 
-        play(this.getWeapon() === 'katana' ? 'katana-swoosh' : this.getWeapon() === 'handgun' ? 'shoot-handgun' : 'shoot-shotgun');
+        play(this.getActiveWeapon() === 'katana' ? 'katana-swoosh' : this.getActiveWeapon() === 'handgun' ? 'shoot-handgun' : 'shoot-shotgun');
 
         let enemiesInLine: [Enemy[], Enemy[], Enemy[]] = [[], [], []];
 
@@ -320,7 +337,7 @@ export default class Player {
                     break;
             }
 
-            if (this.getWeapon() === 'shotgun') {
+            if (this.getActiveWeapon() === 'shotgun') {
                 for (let i = 0; i < screenWidth + screenHeight; i++) {
                     switch (direction) {
                         case 'north':
@@ -397,7 +414,7 @@ export default class Player {
                     break;
             }
 
-            if ((this.getWeapon() === 'katana' && distance <= 1) || (this.getWeapon() === 'handgun' && distance < 4) || (this.getWeapon() === 'shotgun' && distance < 6)) {
+            if ((this.getActiveWeapon() === 'katana' && distance <= 1) || (this.getActiveWeapon() === 'handgun' && distance < 4) || (this.getActiveWeapon() === 'shotgun' && distance < 6)) {
                 this.lastAttack.distance[i] = distance;
                 enemiesInLine[i][0].die();
                 this.killCount++;
@@ -406,8 +423,8 @@ export default class Player {
         }
     }
 
-    getWeapon(): 'katana' | 'handgun' | 'shotgun' {
-        return this.powerUps.some((p) => p.type === 'shotgun') ? 'shotgun' : this.powerUps.some((p) => p.type === 'handgun') ? 'handgun' : 'katana';
+    private getActiveWeapon(): 'katana' | 'handgun' | 'shotgun' {
+        return this.ammo.shotgun > 0 ? 'shotgun' : this.ammo.handgun > 0 ? 'handgun' : 'katana';
     }
 
     getKillCount(): number {

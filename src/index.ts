@@ -256,7 +256,6 @@ function summaryLoop(time: number): void {
     menu([
         { text: `level ${levelsConquered + 1}\n`, color: 'BLACK' },
         { text: `${gameSettings.difficulty}\n\n`, color: 'LIGHT_GRAY' },
-        { text: 'weapon:', color: 'BLUE' }, { text: `${player.getWeapon().padStart(7)}\n`, color: 'DARK_GRAY' },
         { text: 'kills: ', color: 'RED' }, { text: `${player.getKillCount().toString().padStart(7)}\n`, color: 'DARK_GRAY' },
         { text: 'apples:', color: 'GREEN' }, { text: `${player.getApplesCollected().toString().padStart(7)}`, color: 'DARK_GRAY' }
     ]);
