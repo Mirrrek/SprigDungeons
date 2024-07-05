@@ -7,6 +7,7 @@ const loot = [
     { name: 'sight-potion', chance: 0.015 },
     { name: 'health-potion', chance: 0.01 },
     { name: 'handgun', chance: 0.005 },
+    { name: 'rifle', chance: 0.0025 },
     { name: 'shotgun', chance: 0.001 }
 ] as const;
 
