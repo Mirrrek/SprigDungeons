@@ -242,6 +242,12 @@ export default class Player {
                 case 'sight-potion':
                     this.powerUps.push({ type: 'sight', time: Date.now() });
                     break;
+                case 'health-potion':
+                    this.health++;
+                    if (this.health > 4) {
+                        this.health = 4;
+                    }
+                    break;
                 case 'gun':
                     this.powerUps.push({ type: 'gun', time: Date.now() });
                     break;

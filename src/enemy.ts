@@ -5,8 +5,9 @@ const loot = [
     { name: 'apple', chance: 0.05 },
     { name: 'shield-potion', chance: 0.02 },
     { name: 'sight-potion', chance: 0.015 },
+    { name: 'health-potion', chance: 0.01 },
     { name: 'gun', chance: 0.005 },
-    { name: 'shotgun', chance: 0.0005 }
+    { name: 'shotgun', chance: 0.001 }
 ] as const;
 
 export type Loot = typeof loot[number]['name'];
