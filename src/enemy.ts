@@ -5,6 +5,7 @@ const loot = [
     { name: 'apple', chance: 0.05 },
     { name: 'shield-potion', chance: 0.02 },
     { name: 'sight-potion', chance: 0.015 },
+    { name: 'gun', chance: 0.005 },
     { name: 'shotgun', chance: 0.0005 }
 ] as const;
 
@@ -16,7 +17,7 @@ export default class Enemy {
 
     private direction: Direction;
     private spawnTime: number;
-    private lastMove: number;
+    private lastMove: { time: number, attacked: boolean };
     private dieTime: number | null;
 
     private loot: Loot | null;
@@ -26,7 +27,7 @@ export default class Enemy {
         this.y = y;
         this.direction = direction;
         this.spawnTime = 0;
-        this.lastMove = 0;
+        this.lastMove = { time: 0, attacked: false };
         this.dieTime = null;
 
         const randomLoot = loot[Math.floor(Math.random() * loot.length)];
@@ -68,7 +69,7 @@ export default class Enemy {
 
     spawn(): void {
         this.spawnTime = Date.now();
-        this.lastMove = Date.now() + 1000;
+        this.lastMove = { time: Date.now() + 1000, attacked: false };
     }
 
     update(playerPosition: { x: number, y: number }, movementSpeed: number): void {
@@ -76,12 +77,18 @@ export default class Enemy {
             return;
         }
 
-        if (Date.now() - this.lastMove < 1000 / movementSpeed) {
+        if (Date.now() - this.lastMove.time < 1000 / movementSpeed) {
             return;
         }
 
         const dx = playerPosition.x - this.x;
         const dy = playerPosition.y - this.y;
+
+        this.lastMove = { time: Date.now(), attacked: true };
+
+        if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1) {
+            return;
+        }
 
         if (Math.abs(dx) > Math.abs(dy)) {
             this.x += dx > 0 ? 1 : -1;
@@ -90,8 +97,6 @@ export default class Enemy {
             this.y += dy > 0 ? 1 : -1;
             this.direction = dy > 0 ? 'south' : 'north';
         }
-
-        this.lastMove = Date.now();
     }
 
     die(): void {
@@ -100,6 +105,14 @@ export default class Enemy {
         }
 
         this.dieTime = Date.now();
+    }
+
+    hasAttacked(): boolean {
+        if (this.lastMove.attacked) {
+            this.lastMove.attacked = false;
+            return true;
+        }
+        return false;
     }
 
     getState(): 'waiting' | 'spawning' | 'active' | 'dead' {

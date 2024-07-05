@@ -16,7 +16,13 @@ const tunes = [
 1550`
     },
     {
-        name: 'shoot', tune: `
+        name: 'katana-swoosh', tune: `
+37.5: E4~37.5 + D4^37.5 + B4~37.5,
+37.5: D4~37.5 + A4~37.5,
+1125`
+    },
+    {
+        name: 'shoot-gun', tune: `
 50: E4-50 + F4-50 + C4-50 + D4-50 + E5/50,
 50: F4-50 + D4-50 + E5/50,
 1500`

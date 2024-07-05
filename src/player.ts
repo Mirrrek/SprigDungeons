@@ -6,6 +6,7 @@ import play from '@/audio';
 const powerUps = {
     shield: 10000,
     sight: 30000,
+    gun: -1,
     shotgun: -1
 }
 
@@ -16,7 +17,7 @@ export default class Player {
     private y: number;
 
     private direction: Direction;
-    private lastShot: { time: number, distance: [number, number, number] };
+    private lastAttack: { time: number, direction: Direction, distance: [number, number, number] };
     private powerUps: { type: PowerUp, time: number }[];
     private dieTime: number | null;
     private killCount: number;
@@ -29,7 +30,7 @@ export default class Player {
         this.x = Math.floor(screenWidth / 2);
         this.y = Math.floor(screenHeight / 2);
         this.direction = 'east';
-        this.lastShot = { time: 0, distance: [-1, -1, -1] };
+        this.lastAttack = { time: 0, direction: 'north', distance: [-1, -1, -1] };
         this.powerUps = [];
         this.dieTime = null;
         this.killCount = 0;
@@ -49,62 +50,66 @@ export default class Player {
         const step = Math.floor(time / 300) % 2 === 0 ? '0' : '1';
         addSprite(this.x, this.y, getSprite(`player-${step}-${this.direction}`));
 
-        if (Date.now() - this.lastShot.time < 100) {
-            addSprite(this.x + (this.direction === 'east' ? 1 : this.direction === 'west' ? -1 : 0),
-                this.y + (this.direction === 'south' ? 1 : this.direction === 'north' ? -1 : 0),
-                getSprite(this.powerUps.some((p) => p.type === 'shotgun') ? `muzzle-flash-3way-${this.direction}` : `muzzle-flash-${this.direction}`));
+        if (Date.now() - this.lastAttack.time < 100) {
+            addSprite(this.x + (this.lastAttack.direction === 'east' ? 1 : this.lastAttack.direction === 'west' ? -1 : 0),
+                this.y + (this.lastAttack.direction === 'south' ? 1 : this.lastAttack.direction === 'north' ? -1 : 0),
+                getSprite(this.powerUps.some((p) => p.type === 'shotgun') ? `muzzle-flash-3way-${this.lastAttack.direction}` :
+                    this.powerUps.some((p) => p.type === 'gun') ? `muzzle-flash-${this.lastAttack.direction}` :
+                        `katana-swoosh-${Date.now() - this.lastAttack.time < 50 ? '0' : '1'}-${this.lastAttack.direction}`));
 
-            for (let i = 0; i < 3; i++) {
-                if (!this.powerUps.some((p) => p.type === 'shotgun') && i > 0) break;
+            if (this.powerUps.some((p) => p.type === 'gun' || p.type === 'shotgun')) {
+                for (let i = 0; i < 3; i++) {
+                    if (!this.powerUps.some((p) => p.type === 'shotgun') && i > 0) break;
 
-                for (let j = 0; j < screenWidth + screenHeight; j++) {
-                    if (this.lastShot.distance[i] !== -1 && j > this.lastShot.distance[i] - 3) break;
+                    for (let j = 0; j < screenWidth + screenHeight; j++) {
+                        if (this.lastAttack.distance[i] !== -1 && j > this.lastAttack.distance[i] - 3) break;
 
-                    let x;
-                    let y;
+                        let x;
+                        let y;
 
-                    switch (this.direction) {
-                        case 'north':
-                            if (i === 0) {
-                                x = this.x;
-                                y = this.y - 2 - j;
-                            } else {
-                                x = this.x + (i === 1 ? -Math.floor(j / 2) - 1 : Math.floor(j / 2) + 1);
-                                y = this.y - 2 - j;
-                            }
-                            break;
-                        case 'south':
-                            if (i === 0) {
-                                x = this.x;
-                                y = this.y + 2 + j;
-                            } else {
-                                x = this.x - (i === 1 ? -Math.floor(j / 2) - 1 : Math.floor(j / 2) + 1);
-                                y = this.y + 2 + j;
-                            }
-                            break;
-                        case 'west':
-                            if (i === 0) {
-                                x = this.x - 2 - j;
-                                y = this.y;
-                            } else {
-                                x = this.x - 2 - j;
-                                y = this.y - (i === 1 ? -Math.floor(j / 2) - 1 : Math.floor(j / 2) + 1);
-                            }
-                            break;
-                        case 'east':
-                            if (i === 0) {
-                                x = this.x + 2 + j;
-                                y = this.y;
-                            } else {
-                                x = this.x + 2 + j;
-                                y = this.y + (i === 1 ? -Math.floor(j / 2) - 1 : Math.floor(j / 2) + 1);
-                            }
-                            break;
+                        switch (this.lastAttack.direction) {
+                            case 'north':
+                                if (i === 0) {
+                                    x = this.x;
+                                    y = this.y - 2 - j;
+                                } else {
+                                    x = this.x + (i === 1 ? -Math.floor(j / 2) - 1 : Math.floor(j / 2) + 1);
+                                    y = this.y - 2 - j;
+                                }
+                                break;
+                            case 'south':
+                                if (i === 0) {
+                                    x = this.x;
+                                    y = this.y + 2 + j;
+                                } else {
+                                    x = this.x - (i === 1 ? -Math.floor(j / 2) - 1 : Math.floor(j / 2) + 1);
+                                    y = this.y + 2 + j;
+                                }
+                                break;
+                            case 'west':
+                                if (i === 0) {
+                                    x = this.x - 2 - j;
+                                    y = this.y;
+                                } else {
+                                    x = this.x - 2 - j;
+                                    y = this.y - (i === 1 ? -Math.floor(j / 2) - 1 : Math.floor(j / 2) + 1);
+                                }
+                                break;
+                            case 'east':
+                                if (i === 0) {
+                                    x = this.x + 2 + j;
+                                    y = this.y;
+                                } else {
+                                    x = this.x + 2 + j;
+                                    y = this.y + (i === 1 ? -Math.floor(j / 2) - 1 : Math.floor(j / 2) + 1);
+                                }
+                                break;
+                        }
+
+                        if (x < 1 || x >= screenWidth - 1 || y < 1 || y >= screenHeight - 1) break;
+
+                        addSprite(x, y, getSprite(i === 0 ? `bullet-path-${j === 0 ? '0' : j === 1 ? '1' : '2'}-${this.lastAttack.direction}` : `bullet-path-angled-${j === 0 ? '0a' : j === 1 ? '1b' : j % 2 === 0 ? '2a' : '2b'}-${j >= 2 ? i === 1 ? 'north' : 'south' : i === 1 ? 'south' : 'north'}-${j >= 2 ? i === 1 ? this.lastAttack.direction : this.oppositeDirection(this.lastAttack.direction) : i === 1 ? this.oppositeDirection(this.lastAttack.direction) : this.lastAttack.direction}`));
                     }
-
-                    if (x < 1 || x >= screenWidth - 1 || y < 1 || y >= screenHeight - 1) break;
-
-                    addSprite(x, y, getSprite(i === 0 ? `bullet-path-${j === 0 ? '0' : j === 1 ? '1' : '2'}-${this.direction}` : `bullet-path-angled-${j === 0 ? '0a' : j === 1 ? '1b' : j % 2 === 0 ? '2a' : '2b'}-${j >= 2 ? i === 1 ? 'north' : 'south' : i === 1 ? 'south' : 'north'}-${j >= 2 ? i === 1 ? this.direction : this.oppositeDirection(this.direction) : i === 1 ? this.oppositeDirection(this.direction) : this.direction}`));
                 }
             }
         }
@@ -195,12 +200,11 @@ export default class Player {
 
     update(enemies: Enemy[]): void {
         if (!this.powerUps.some((p) => p.type === 'shield') && enemies.some((enemy) => {
-            if (enemy.getState() !== 'active') return false;
+            if (enemy.getState() !== 'active' || !enemy.hasAttacked()) return false;
             const enemyPosition = enemy.getPosition();
-            return enemyPosition.x === this.x && enemyPosition.y === this.y;
+            return Math.abs(enemyPosition.x - this.x) <= 1 && Math.abs(enemyPosition.y - this.y) <= 1;
         })) {
             this.dieTime = Date.now();
-            play('death');
             if (this.onDeath !== null) {
                 this.onDeath();
             }
@@ -228,6 +232,9 @@ export default class Player {
                     break;
                 case 'sight-potion':
                     this.powerUps.push({ type: 'sight', time: Date.now() });
+                    break;
+                case 'gun':
+                    this.powerUps.push({ type: 'gun', time: Date.now() });
                     break;
                 case 'shotgun':
                     this.powerUps.push({ type: 'shotgun', time: Date.now() });
@@ -264,9 +271,9 @@ export default class Player {
 
     shoot(direction: Direction, enemies: Enemy[]): void {
         this.direction = direction;
-        this.lastShot = { time: Date.now(), distance: [-1, -1, -1] }
+        this.lastAttack = { time: Date.now(), direction, distance: [-1, -1, -1] }
 
-        play(this.powerUps.some((p) => p.type === 'shotgun') ? 'shoot-shotgun' : 'shoot');
+        play(this.powerUps.some((p) => p.type === 'shotgun') ? 'shoot-shotgun' : this.powerUps.some((p) => p.type === 'gun') ? 'shoot-gun' : 'katana-swoosh');
 
         let enemiesInLine: [Enemy[], Enemy[], Enemy[]] = [[], [], []];
 
@@ -274,64 +281,89 @@ export default class Player {
             if (enemy.getState() !== 'spawning' && enemy.getState() !== 'active') return;
 
             const enemyPosition = enemy.getPosition();
-            switch (direction) {
-                case 'north':
-                    if (enemyPosition.x === this.x && enemyPosition.y <= this.y) {
-                        enemiesInLine[0].push(enemy);
-                    }
-                    break;
-                case 'south':
-                    if (enemyPosition.x === this.x && enemyPosition.y >= this.y) {
-                        enemiesInLine[0].push(enemy);
-                    }
-                    break;
-                case 'west':
-                    if (enemyPosition.y === this.y && enemyPosition.x <= this.x) {
-                        enemiesInLine[0].push(enemy);
-                    }
-                    break;
-                case 'east':
-                    if (enemyPosition.y === this.y && enemyPosition.x >= this.x) {
-                        enemiesInLine[0].push(enemy);
-                    }
-                    break;
-            }
+            if (!this.powerUps.some((p) => p.type === 'gun' || p.type === 'shotgun')) {
+                switch (direction) {
+                    case 'north':
+                        if (enemyPosition.x === this.x && (enemyPosition.y === this.y || enemyPosition.y === this.y - 1)) {
+                            enemiesInLine[0].push(enemy);
+                        }
+                        break;
+                    case 'south':
+                        if (enemyPosition.x === this.x && (enemyPosition.y === this.y || enemyPosition.y === this.y + 1)) {
+                            enemiesInLine[0].push(enemy);
+                        }
+                        break;
+                    case 'west':
+                        if (enemyPosition.y === this.y && (enemyPosition.x === this.x || enemyPosition.x === this.x - 1)) {
+                            enemiesInLine[0].push(enemy);
+                        }
+                        break;
+                    case 'east':
+                        if (enemyPosition.y === this.y && (enemyPosition.x === this.x || enemyPosition.x === this.x + 1)) {
+                            enemiesInLine[0].push(enemy);
+                        }
+                        break;
+                }
+            } else {
+                switch (direction) {
+                    case 'north':
+                        if (enemyPosition.x === this.x && enemyPosition.y <= this.y) {
+                            enemiesInLine[0].push(enemy);
+                        }
+                        break;
+                    case 'south':
+                        if (enemyPosition.x === this.x && enemyPosition.y >= this.y) {
+                            enemiesInLine[0].push(enemy);
+                        }
+                        break;
+                    case 'west':
+                        if (enemyPosition.y === this.y && enemyPosition.x <= this.x) {
+                            enemiesInLine[0].push(enemy);
+                        }
+                        break;
+                    case 'east':
+                        if (enemyPosition.y === this.y && enemyPosition.x >= this.x) {
+                            enemiesInLine[0].push(enemy);
+                        }
+                        break;
+                }
 
-            if (this.powerUps.some((p) => p.type === 'shotgun')) {
-                for (let i = 0; i < screenWidth + screenHeight; i++) {
-                    switch (this.direction) {
-                        case 'north':
-                            if (enemyPosition.x === this.x - Math.floor(i / 2) && enemyPosition.y === this.y - i) {
-                                enemiesInLine[1].push(enemy);
-                            }
-                            if (enemyPosition.x === this.x + Math.floor(i / 2) && enemyPosition.y === this.y - i) {
-                                enemiesInLine[2].push(enemy);
-                            }
-                            break;
-                        case 'south':
-                            if (enemyPosition.x === this.x + Math.floor(i / 2) && enemyPosition.y === this.y + i) {
-                                enemiesInLine[1].push(enemy);
-                            }
-                            if (enemyPosition.x === this.x - Math.floor(i / 2) && enemyPosition.y === this.y + i) {
-                                enemiesInLine[2].push(enemy);
-                            }
-                            break;
-                        case 'west':
-                            if (enemyPosition.x === this.x - i && enemyPosition.y === this.y + Math.floor(i / 2)) {
-                                enemiesInLine[1].push(enemy);
-                            }
-                            if (enemyPosition.x === this.x - i && enemyPosition.y === this.y - Math.floor(i / 2)) {
-                                enemiesInLine[2].push(enemy);
-                            }
-                            break;
-                        case 'east':
-                            if (enemyPosition.x === this.x + i && enemyPosition.y === this.y - Math.floor(i / 2)) {
-                                enemiesInLine[1].push(enemy);
-                            }
-                            if (enemyPosition.x === this.x + i && enemyPosition.y === this.y + Math.floor(i / 2)) {
-                                enemiesInLine[2].push(enemy);
-                            }
-                            break;
+                if (this.powerUps.some((p) => p.type === 'shotgun')) {
+                    for (let i = 0; i < screenWidth + screenHeight; i++) {
+                        switch (direction) {
+                            case 'north':
+                                if (enemyPosition.x === this.x - Math.floor(i / 2) && enemyPosition.y === this.y - i) {
+                                    enemiesInLine[1].push(enemy);
+                                }
+                                if (enemyPosition.x === this.x + Math.floor(i / 2) && enemyPosition.y === this.y - i) {
+                                    enemiesInLine[2].push(enemy);
+                                }
+                                break;
+                            case 'south':
+                                if (enemyPosition.x === this.x + Math.floor(i / 2) && enemyPosition.y === this.y + i) {
+                                    enemiesInLine[1].push(enemy);
+                                }
+                                if (enemyPosition.x === this.x - Math.floor(i / 2) && enemyPosition.y === this.y + i) {
+                                    enemiesInLine[2].push(enemy);
+                                }
+                                break;
+                            case 'west':
+                                if (enemyPosition.x === this.x - i && enemyPosition.y === this.y + Math.floor(i / 2)) {
+                                    enemiesInLine[1].push(enemy);
+                                }
+                                if (enemyPosition.x === this.x - i && enemyPosition.y === this.y - Math.floor(i / 2)) {
+                                    enemiesInLine[2].push(enemy);
+                                }
+                                break;
+                            case 'east':
+                                if (enemyPosition.x === this.x + i && enemyPosition.y === this.y - Math.floor(i / 2)) {
+                                    enemiesInLine[1].push(enemy);
+                                }
+                                if (enemyPosition.x === this.x + i && enemyPosition.y === this.y + Math.floor(i / 2)) {
+                                    enemiesInLine[2].push(enemy);
+                                }
+                                break;
+                        }
                     }
                 }
             }
@@ -359,21 +391,25 @@ export default class Player {
 
             switch (direction) {
                 case 'north':
-                    this.lastShot.distance[i] = this.y - enemiesInLine[i][0].getPosition().y;
+                    this.lastAttack.distance[i] = this.y - enemiesInLine[i][0].getPosition().y;
                     break;
                 case 'south':
-                    this.lastShot.distance[i] = enemiesInLine[i][0].getPosition().y - this.y;
+                    this.lastAttack.distance[i] = enemiesInLine[i][0].getPosition().y - this.y;
                     break;
                 case 'west':
-                    this.lastShot.distance[i] = this.x - enemiesInLine[i][0].getPosition().x;
+                    this.lastAttack.distance[i] = this.x - enemiesInLine[i][0].getPosition().x;
                     break;
                 case 'east':
-                    this.lastShot.distance[i] = enemiesInLine[i][0].getPosition().x - this.x;
+                    this.lastAttack.distance[i] = enemiesInLine[i][0].getPosition().x - this.x;
                     break;
             }
             enemiesInLine[i][0].die();
             this.killCount++;
         }
+    }
+
+    getWeapon(): 'katana' | 'gun' | 'shotgun' {
+        return this.powerUps.some((p) => p.type === 'shotgun') ? 'shotgun' : this.powerUps.some((p) => p.type === 'gun') ? 'gun' : 'katana';
     }
 
     getKillCount(): number {
