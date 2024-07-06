@@ -290,7 +290,7 @@ export default class Player {
     }
 
     attack(direction: Direction, enemies: Enemy[]): void {
-        if (this.getActiveWeapon() === 'katana' && Date.now() - this.lastAttack.time < 500) return;
+        if (this.getActiveWeapon() === 'katana' && Date.now() - this.lastAttack.time < 250) return;
 
         if (this.getActiveWeapon() !== 'katana') {
             this.ammo[this.getActiveWeapon() as Exclude<ReturnType<typeof this.getActiveWeapon>, 'katana'>]--;

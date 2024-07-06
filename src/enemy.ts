@@ -23,6 +23,7 @@ export default class Enemy {
     private health: number;
     private spawnTime: number;
     private dieTime: number | null;
+    private proximityTime: number | null;
 
     private loot: Loot | null;
 
@@ -34,6 +35,7 @@ export default class Enemy {
         this.direction = direction;
         this.spawnTime = 0;
         this.dieTime = null;
+        this.proximityTime = null;
 
         const randomLoot = loot[Math.floor(Math.random() * loot.length)];
         this.loot = (this.boss || Math.random() < randomLoot.chance * loot.length) ? randomLoot.name : null;
@@ -111,6 +113,25 @@ export default class Enemy {
 
         if (this.health <= 0) {
             this.dieTime = Date.now();
+            return true;
+        }
+
+        return false;
+    }
+
+    setPlayerProximity(proximity: boolean): boolean {
+        if (this.getState() !== 'active') {
+            return false;
+        }
+
+        if (!proximity) {
+            this.proximityTime = null;
+            return false;
+        }
+
+        if (this.proximityTime === null) {
+            this.proximityTime = Date.now();
+        } else if (Date.now() - this.proximityTime > 500) {
             return true;
         }
 

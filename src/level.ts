@@ -159,14 +159,16 @@ export default class Level {
             }
         }
 
-        let playerHit = false;
         if (Date.now() - this.lastMoveTime > 1000 / enemySpeed) {
             this.lastMoveTime = Date.now();
-            playerHit = this.enemies[this.currentWave].some((enemy) => enemy.getState() === 'active' && Math.sqrt((enemy.getPosition().x - playerPosition.x) ** 2 + (enemy.getPosition().y - playerPosition.y) ** 2) <= 1);
             this.enemies.forEach((wave) => wave.forEach((enemy) => enemy.update(playerPosition)));
         }
 
-        return playerHit;
+        if (this.enemies[this.currentWave].some((enemy) => enemy.setPlayerProximity(Math.sqrt((enemy.getPosition().x - playerPosition.x) ** 2 + (enemy.getPosition().y - playerPosition.y) ** 2) <= 1))) {
+            this.enemies[this.currentWave].forEach((enemy) => enemy.setPlayerProximity(false));
+            return true;
+        }
+        return false;
     }
 
     getLevel(direction: Direction): Level | null {
