@@ -49,20 +49,7 @@ function init() {
         }
 
         currentLevel = nextLevel;
-        switch (direction) {
-            case 'north':
-                player.setY(screenHeight - 2);
-                break;
-            case 'south':
-                player.setY(1);
-                break;
-            case 'west':
-                player.setX(screenWidth - 2);
-                break;
-            case 'east':
-                player.setX(1);
-                break;
-        }
+        player.teleport(direction);
         if (currentLevel.getState() === 'waiting') {
             currentLevel.generateChildLevels();
             currentLevel.startFight(() => {

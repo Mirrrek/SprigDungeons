@@ -272,25 +272,20 @@ export default class Player {
         }
     }
 
-    setX(x: number): void {
-        this.x = x;
-
-        if (this.x < 1) {
-            this.x = 1;
-        }
-        if (this.x > screenWidth - 2) {
-            this.x = screenWidth - 2;
-        }
-    }
-
-    setY(y: number): void {
-        this.y = y;
-
-        if (this.y < 1) {
-            this.y = 1;
-        }
-        if (this.y > screenHeight - 2) {
-            this.y = screenHeight - 2;
+    teleport(direction: Direction): void {
+        switch (direction) {
+            case 'north':
+                this.y = screenHeight - 2;
+                break;
+            case 'south':
+                this.y = 1;
+                break;
+            case 'west':
+                this.x = screenWidth - 2;
+                break;
+            case 'east':
+                this.x = 1;
+                break;
         }
     }
 
