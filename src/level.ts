@@ -16,6 +16,7 @@ export default class Level {
     private readonly map: string;
 
     private readonly enemies: Enemy[][];
+    private lastMoveTime: number;
     private currentWave: number;
     private newWaveTime: number;
     private lastBossWave: number;
@@ -59,6 +60,7 @@ export default class Level {
         }
 
         this.enemies = [];
+        this.lastMoveTime = 0;
         this.currentWave = 0;
         this.newWaveTime = 0;
         this.lastBossWave = 0;
@@ -127,9 +129,9 @@ export default class Level {
         play('level-start');
     }
 
-    update(playerPosition: { x: number, y: number }, enemySpeed: number): void {
+    update(playerPosition: { x: number, y: number }, enemySpeed: number): boolean {
         if (this.state !== 'active') {
-            return;
+            return false;
         }
 
         if (this.type === 'boss' && Date.now() - this.lastBossWave > 10000 && this.enemies[0][0].getState() !== 'dead') {
@@ -157,7 +159,14 @@ export default class Level {
             }
         }
 
-        this.enemies.forEach((wave) => wave.forEach((enemy) => enemy.update(playerPosition, enemySpeed)));
+        let playerHit = false;
+        if (Date.now() - this.lastMoveTime > 1000 / enemySpeed) {
+            this.lastMoveTime = Date.now();
+            playerHit = this.enemies[this.currentWave].some((enemy) => enemy.getState() === 'active' && Math.sqrt((enemy.getPosition().x - playerPosition.x) ** 2 + (enemy.getPosition().y - playerPosition.y) ** 2) <= 1);
+            this.enemies.forEach((wave) => wave.forEach((enemy) => enemy.update(playerPosition)));
+        }
+
+        return playerHit;
     }
 
     getLevel(direction: Direction): Level | null {

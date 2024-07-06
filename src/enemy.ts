@@ -22,7 +22,6 @@ export default class Enemy {
     private direction: Direction;
     private health: number;
     private spawnTime: number;
-    private lastMove: { time: number, attacked: boolean };
     private dieTime: number | null;
 
     private loot: Loot | null;
@@ -34,7 +33,6 @@ export default class Enemy {
         this.y = y;
         this.direction = direction;
         this.spawnTime = 0;
-        this.lastMove = { time: 0, attacked: false };
         this.dieTime = null;
 
         const randomLoot = loot[Math.floor(Math.random() * loot.length)];
@@ -81,24 +79,17 @@ export default class Enemy {
 
     spawn(): void {
         this.spawnTime = Date.now();
-        this.lastMove = { time: Date.now() + 1000, attacked: false };
     }
 
-    update(playerPosition: { x: number, y: number }, movementSpeed: number): void {
-        if (this.spawnTime === 0 || this.dieTime !== null) {
-            return;
-        }
-
-        if (Date.now() - this.lastMove.time < 1000 / movementSpeed) {
+    update(playerPosition: { x: number, y: number }): void {
+        if (this.getState() !== 'active') {
             return;
         }
 
         const dx = playerPosition.x - this.x;
         const dy = playerPosition.y - this.y;
 
-        this.lastMove = { time: Date.now(), attacked: true };
-
-        if (dx === 0 && dy === 0) {
+        if (Math.sqrt(dx ** 2 + dy ** 2) <= 1) {
             return;
         }
 
@@ -123,14 +114,6 @@ export default class Enemy {
             return true;
         }
 
-        return false;
-    }
-
-    hasAttacked(): boolean {
-        if (this.lastMove.attacked) {
-            this.lastMove.attacked = false;
-            return true;
-        }
         return false;
     }
 

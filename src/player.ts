@@ -213,22 +213,6 @@ export default class Player {
     }
 
     update(enemies: Enemy[]): void {
-        if (!this.powerUps.some((p) => p.type === 'shield') && enemies.some((enemy) => {
-            if (enemy.getState() !== 'active' || !enemy.hasAttacked()) return false;
-            const enemyPosition = enemy.getPosition();
-            return enemyPosition.x == this.x && enemyPosition.y == this.y;
-        })) {
-            this.health--;
-            play('hurt');
-            if (this.health <= 0) {
-                this.dieTime = Date.now();
-                if (this.onDeath !== null) {
-                    this.onDeath();
-                }
-                return;
-            }
-        }
-
         const lootEnemy = enemies.find((enemy) => {
             if (enemy.getState() !== 'dead' || enemy.getLoot() === null) return false;
             const enemyPosition = enemy.getPosition();
@@ -273,6 +257,21 @@ export default class Player {
         });
     }
 
+    hit(): void {
+        if (this.powerUps.some((p) => p.type === 'shield')) {
+            return;
+        }
+
+        this.health--;
+        play('hurt');
+        if (this.health <= 0) {
+            this.dieTime = Date.now();
+            if (this.onDeath !== null) {
+                this.onDeath();
+            }
+        }
+    }
+
     setX(x: number): void {
         this.x = x;
 
@@ -296,7 +295,7 @@ export default class Player {
     }
 
     attack(direction: Direction, enemies: Enemy[]): void {
-        if (this.getActiveWeapon() === 'katana' && Date.now() - this.lastAttack.time < 250) return;
+        if (this.getActiveWeapon() === 'katana' && Date.now() - this.lastAttack.time < 500) return;
 
         if (this.getActiveWeapon() !== 'katana') {
             this.ammo[this.getActiveWeapon() as Exclude<ReturnType<typeof this.getActiveWeapon>, 'katana'>]--;
