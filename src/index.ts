@@ -1,4 +1,3 @@
-import { screenWidth, screenHeight } from '@/constants';
 import Player from '@/player';
 import Level from '@/level';
 import input from '@/input';
@@ -31,14 +30,7 @@ function init() {
     levelsConquered = 0;
     deathTime = 0;
 
-    player = new Player();
-    currentLevel = new Level(() => levelsConquered, null);
-    currentLevel.generateChildLevels();
-    currentLevel.skipFight();
-
-    musicPlayer = gameSettings.music ? play('theme-main', Infinity) : { end: () => { } };
-
-    player.onEnterLevel = (direction) => {
+    player = new Player((direction) => {
         if (currentLevel.getState() !== 'conquered') {
             return;
         }
@@ -51,14 +43,9 @@ function init() {
         currentLevel = nextLevel;
         player.teleport(direction);
         if (currentLevel.getState() === 'waiting') {
-            currentLevel.generateChildLevels();
-            currentLevel.startFight(() => {
-                levelsConquered++;
-            });
+            currentLevel.initialize();
         }
-    }
-
-    player.onDeath = () => {
+    }, () => {
         deathTime = Date.now();
         gameState = 'dead';
         musicPlayer.end();
@@ -66,7 +53,12 @@ function init() {
         if (gameSettings.music) {
             musicPlayer = play('theme-death', Infinity);
         }
-    }
+    });
+
+    currentLevel = new Level(() => levelsConquered, () => levelsConquered++, null);
+    currentLevel.initialize();
+
+    musicPlayer = gameSettings.music ? play('theme-main', Infinity) : { end: () => { } };
 }
 
 function loop(time: number): void {

@@ -13,7 +13,7 @@ export default class Level {
     private eastLevel: Level | null;
     private southLevel: Level | null;
 
-    private readonly map: string;
+    private map: string;
 
     private readonly enemies: Enemy[][];
     private lastMoveTime: number;
@@ -22,13 +22,14 @@ export default class Level {
     private lastBossWave: number;
 
     private getLevelsConquered: () => number;
-    private onLevelConquered: (() => void) | null = null;
+    private onLevelConquered: () => void;
 
-    constructor(getLevelsConquered: () => number, previousLevel: { level: Level, direction: Exclude<Direction, 'east'> } | null) {
+    constructor(getLevelsConquered: () => number, onLevelConquered: () => void, previousLevel: { level: Level, direction: Exclude<Direction, 'east'> } | null) {
         this.getLevelsConquered = getLevelsConquered;
+        this.onLevelConquered = onLevelConquered;
         this.previousLevel = previousLevel;
 
-        this.type = getLevelsConquered() % 4 === 3 ? 'boss' : 'normal';
+        this.type = 'normal';
         this.state = 'waiting';
 
         this.northLevel = null;
@@ -36,6 +37,21 @@ export default class Level {
         this.southLevel = null;
 
         this.map = '';
+
+        this.enemies = [];
+        this.lastMoveTime = 0;
+        this.currentWave = 0;
+        this.newWaveTime = 0;
+        this.lastBossWave = 0;
+    }
+
+    initialize(): void {
+        if (this.state !== 'waiting') {
+            return;
+        }
+
+        this.type = this.getLevelsConquered() % 4 === 3 ? 'boss' : 'normal';
+
         const carpetPositionX = Math.floor(screenWidth / 2 - 3);
         const carpetPositionY = Math.floor(screenHeight / 2 - 3);
         for (let y = 0; y < screenHeight; y++) {
@@ -59,18 +75,6 @@ export default class Level {
             }
         }
 
-        this.enemies = [];
-        this.lastMoveTime = 0;
-        this.currentWave = 0;
-        this.newWaveTime = 0;
-        this.lastBossWave = 0;
-    }
-
-    generateChildLevels(): void {
-        if (this.state !== 'waiting') {
-            throw new Error('Cannot generate child levels for a level that is not waiting');
-        }
-
         let nextLevelDirection: Exclude<Direction, 'west'> = 'east';
         do {
             nextLevelDirection = (['north', 'east', 'south'] as const)[Math.floor(Math.random() * 3)];
@@ -78,41 +82,38 @@ export default class Level {
 
         switch (nextLevelDirection) {
             case 'north': {
-                this.northLevel = new Level(this.getLevelsConquered, { level: this, direction: 'south' });
+                this.northLevel = new Level(this.getLevelsConquered, this.onLevelConquered, { level: this, direction: 'south' });
                 if (Math.random() < 0.15) {
-                    this.eastLevel = new Level(this.getLevelsConquered, { level: this, direction: 'west' });
+                    this.eastLevel = new Level(this.getLevelsConquered, this.onLevelConquered, { level: this, direction: 'west' });
                 }
                 if (Math.random() < 0.15 && this.previousLevel?.direction !== 'south') {
-                    this.southLevel = new Level(this.getLevelsConquered, { level: this, direction: 'north' });
+                    this.southLevel = new Level(this.getLevelsConquered, this.onLevelConquered, { level: this, direction: 'north' });
                 }
             } break;
             case 'east': {
-                this.eastLevel = new Level(this.getLevelsConquered, { level: this, direction: 'west' });
+                this.eastLevel = new Level(this.getLevelsConquered, this.onLevelConquered, { level: this, direction: 'west' });
                 if (Math.random() < 0.15 && this.previousLevel?.direction !== 'north') {
-                    this.northLevel = new Level(this.getLevelsConquered, { level: this, direction: 'south' });
+                    this.northLevel = new Level(this.getLevelsConquered, this.onLevelConquered, { level: this, direction: 'south' });
                 }
                 if (Math.random() < 0.15 && this.previousLevel?.direction !== 'south') {
-                    this.southLevel = new Level(this.getLevelsConquered, { level: this, direction: 'north' });
+                    this.southLevel = new Level(this.getLevelsConquered, this.onLevelConquered, { level: this, direction: 'north' });
                 }
             } break;
             case 'south': {
-                this.southLevel = new Level(this.getLevelsConquered, { level: this, direction: 'north' });
+                this.southLevel = new Level(this.getLevelsConquered, this.onLevelConquered, { level: this, direction: 'north' });
                 if (Math.random() < 0.15 && this.previousLevel?.direction !== 'north') {
-                    this.northLevel = new Level(this.getLevelsConquered, { level: this, direction: 'south' });
+                    this.northLevel = new Level(this.getLevelsConquered, this.onLevelConquered, { level: this, direction: 'south' });
                 }
                 if (Math.random() < 0.15) {
-                    this.eastLevel = new Level(this.getLevelsConquered, { level: this, direction: 'west' });
+                    this.eastLevel = new Level(this.getLevelsConquered, this.onLevelConquered, { level: this, direction: 'west' });
                 }
             } break;
         }
-    }
 
-    skipFight(): void {
-        this.state = 'conquered';
-    }
-
-    startFight(onLevelConquered: () => void): void {
-        this.onLevelConquered = onLevelConquered;
+        if (this.previousLevel === null) {
+            this.state = 'conquered';
+            return;
+        }
 
         switch (this.type) {
             case 'normal':
@@ -145,9 +146,7 @@ export default class Level {
                 if (this.currentWave === this.enemies.length - 1) {
                     this.state = 'conquered';
                     play('level-cleared');
-                    if (this.onLevelConquered !== null) {
-                        this.onLevelConquered();
-                    }
+                    this.onLevelConquered();
                 } else {
                     this.newWaveTime = Date.now();
                 }

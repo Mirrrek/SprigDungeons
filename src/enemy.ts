@@ -105,8 +105,8 @@ export default class Enemy {
     }
 
     hit(): boolean {
-        if (this.dieTime !== null) {
-            return true;
+        if (this.getState() !== 'spawning' && this.getState() !== 'active') {
+            return false;
         }
 
         this.health--;

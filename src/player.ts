@@ -29,10 +29,13 @@ export default class Player {
     private killCount: number;
     private applesCollected: number;
 
-    onEnterLevel: ((direction: Direction) => void) | null = null;
-    onDeath: (() => void) | null = null;
+    private onEnterDoor: ((direction: Direction) => void);
+    private onDeath: (() => void);
 
-    constructor() {
+    constructor(onEnterDoor: ((direction: Direction) => void), onDeath: (() => void)) {
+        this.onEnterDoor = onEnterDoor;
+        this.onDeath = onDeath;
+
         this.x = Math.floor(screenWidth / 2);
         this.y = Math.floor(screenHeight / 2);
         this.direction = 'east';
@@ -182,18 +185,16 @@ export default class Player {
             this.direction = 'east';
         }
 
-        if (this.onEnterLevel !== null) {
-            const doorPositionX = Math.floor(screenWidth / 2 - doorWidth / 2);
-            const doorPositionY = Math.floor(screenHeight / 2 - doorWidth / 2);
-            if (this.x <= 0 && this.y >= doorPositionY && this.y < doorPositionY + doorWidth) {
-                this.onEnterLevel('west');
-            } else if (this.x >= screenWidth - 1 && this.y >= doorPositionY && this.y < doorPositionY + doorWidth) {
-                this.onEnterLevel('east');
-            } else if (this.y <= 0 && this.x >= doorPositionX && this.x < doorPositionX + doorWidth) {
-                this.onEnterLevel('north');
-            } else if (this.y >= screenHeight - 1 && this.x >= doorPositionX && this.x < doorPositionX + doorWidth) {
-                this.onEnterLevel('south');
-            }
+        const doorPositionX = Math.floor(screenWidth / 2 - doorWidth / 2);
+        const doorPositionY = Math.floor(screenHeight / 2 - doorWidth / 2);
+        if (this.x <= 0 && this.y >= doorPositionY && this.y < doorPositionY + doorWidth) {
+            this.onEnterDoor('west');
+        } else if (this.x >= screenWidth - 1 && this.y >= doorPositionY && this.y < doorPositionY + doorWidth) {
+            this.onEnterDoor('east');
+        } else if (this.y <= 0 && this.x >= doorPositionX && this.x < doorPositionX + doorWidth) {
+            this.onEnterDoor('north');
+        } else if (this.y >= screenHeight - 1 && this.x >= doorPositionX && this.x < doorPositionX + doorWidth) {
+            this.onEnterDoor('south');
         }
 
         if (this.x < 1) {
@@ -266,9 +267,7 @@ export default class Player {
         play('hurt');
         if (this.health <= 0) {
             this.dieTime = Date.now();
-            if (this.onDeath !== null) {
-                this.onDeath();
-            }
+            this.onDeath();
         }
     }
 
