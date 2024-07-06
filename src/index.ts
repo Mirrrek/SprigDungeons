@@ -250,11 +250,11 @@ function summaryLoop(time: number): void {
 function calculateEnemySpeed(): number {
     switch (gameSettings.difficulty) {
         case 'normal':
-            return 1 + levelsConquered * 0.15;
+            return 1 + levelsConquered * 0.1;
         case 'hard':
-            return 1.5 + levelsConquered * 0.3;
+            return 1.5 + levelsConquered * 0.2;
         case 'impossible':
-            return 2 + levelsConquered * 0.6;
+            return 2 + levelsConquered * 0.3;
     }
 }
 
