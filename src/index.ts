@@ -43,7 +43,7 @@ function init() {
         currentLevel = nextLevel;
         player.teleport(direction);
         if (currentLevel.getState() === 'waiting') {
-            currentLevel.initialize();
+            currentLevel.initialize(calculateBossHealth(), calculateEnemySpeed());
         }
     }, () => {
         deathTime = Date.now();
@@ -56,7 +56,7 @@ function init() {
     });
 
     currentLevel = new Level(() => levelsConquered, () => levelsConquered++, null);
-    currentLevel.initialize();
+    currentLevel.initialize(calculateBossHealth(), calculateEnemySpeed());
 
     musicPlayer = gameSettings.music ? play('theme-main', Infinity) : { end: () => { } };
 }
@@ -207,7 +207,7 @@ function gameLoop(time: number): void {
         player.attack('east', currentLevel.getEnemies());
     }
 
-    if (currentLevel.update(player.getPosition(), calculateEnemySpeed())) {
+    if (currentLevel.update(player.getPosition())) {
         player.hit();
     }
     player.update(currentLevel.getEnemies());
@@ -247,14 +247,25 @@ function summaryLoop(time: number): void {
     }
 }
 
+function calculateBossHealth(): number {
+    switch (gameSettings.difficulty) {
+        case 'normal':
+            return Math.floor(4 + levelsConquered);
+        case 'hard':
+            return Math.floor(8 + levelsConquered * 1.25);
+        case 'impossible':
+            return Math.floor(12 + levelsConquered * 1.5);
+    }
+}
+
 function calculateEnemySpeed(): number {
     switch (gameSettings.difficulty) {
         case 'normal':
             return 1 + levelsConquered * 0.1;
         case 'hard':
-            return 1.5 + levelsConquered * 0.2;
+            return 2 + levelsConquered * 0.15;
         case 'impossible':
-            return 2 + levelsConquered * 0.3;
+            return 3 + levelsConquered * 0.2;
     }
 }
 

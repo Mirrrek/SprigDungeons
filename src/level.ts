@@ -18,6 +18,7 @@ export default class Level {
     private readonly enemies: Enemy[][];
     private lastEnemyMoveTime: number;
     private lastBossMoveTime: number;
+    private enemySpeed: number;
     private currentWave: number;
     private newWaveTime: number;
     private lastBossWave: number;
@@ -42,17 +43,20 @@ export default class Level {
         this.enemies = [];
         this.lastEnemyMoveTime = 0;
         this.lastBossMoveTime = 0;
+        this.enemySpeed = 1;
         this.currentWave = 0;
         this.newWaveTime = 0;
         this.lastBossWave = 0;
     }
 
-    initialize(): void {
+    initialize(bossHealth: number, enemySpeed: number): void {
         if (this.state !== 'waiting') {
             return;
         }
 
         this.type = this.getLevelsConquered() % 4 === 3 ? 'boss' : 'normal';
+
+        this.enemySpeed = enemySpeed;
 
         const carpetPositionX = Math.floor(screenWidth / 2 - 3);
         const carpetPositionY = Math.floor(screenHeight / 2 - 3);
@@ -124,7 +128,7 @@ export default class Level {
                 this.enemies.push(new Array(7 + Math.floor(this.getLevelsConquered() / 4)).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)])));
                 break;
             case 'boss':
-                this.enemies.push([new Enemy(Math.floor(screenWidth / 2), Math.floor(screenHeight / 2), this.previousLevel?.direction ?? 'north', 4 + this.getLevelsConquered())]);
+                this.enemies.push([new Enemy(Math.floor(screenWidth / 2), Math.floor(screenHeight / 2), this.previousLevel?.direction ?? 'north', bossHealth)]);
                 break;
         }
         this.state = 'active';
@@ -132,7 +136,7 @@ export default class Level {
         play('level-start');
     }
 
-    update(playerPosition: { x: number, y: number }, enemySpeed: number): boolean {
+    update(playerPosition: { x: number, y: number }): boolean {
         if (this.state !== 'active') {
             return false;
         }
@@ -160,7 +164,7 @@ export default class Level {
             }
         }
 
-        if (Date.now() - this.lastEnemyMoveTime > 1000 / enemySpeed) {
+        if (Date.now() - this.lastEnemyMoveTime > 1000 / this.enemySpeed) {
             this.lastEnemyMoveTime = Date.now();
             this.enemies.forEach((wave, i) => wave.forEach((enemy, j) => (this.type !== 'boss' || i !== 0 || j !== 0) && enemy.update(playerPosition)));
         }
