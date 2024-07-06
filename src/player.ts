@@ -36,7 +36,7 @@ export default class Player {
         this.x = Math.floor(screenWidth / 2);
         this.y = Math.floor(screenHeight / 2);
         this.direction = 'east';
-        this.health = 4;
+        this.health = 6;
         this.lastAttack = { time: 0, direction: 'north', distance: [-1, -1, -1] };
         this.powerUps = [];
         this.ammo = { handgun: 0, rifle: 0, shotgun: 0 };
@@ -46,6 +46,7 @@ export default class Player {
     }
 
     render(time: number): void {
+        addSprite(screenWidth - 4, screenHeight - 1, getSprite(this.health >= 6 ? 'heart-0' : this.health === 5 ? 'heart-1' : 'heart-2'));
         addSprite(screenWidth - 3, screenHeight - 1, getSprite(this.health >= 4 ? 'heart-0' : this.health === 3 ? 'heart-1' : 'heart-2'));
         addSprite(screenWidth - 2, screenHeight - 1, getSprite(this.health >= 2 ? 'heart-0' : this.health === 1 ? 'heart-1' : 'heart-2'));
 
@@ -252,8 +253,8 @@ export default class Player {
                     break;
                 case 'health-potion':
                     this.health++;
-                    if (this.health > 4) {
-                        this.health = 4;
+                    if (this.health > 6) {
+                        this.health = 6;
                     }
                     break;
                 case 'handgun':
