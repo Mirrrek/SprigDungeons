@@ -83,7 +83,7 @@ export default class Enemy {
         this.spawnTime = Date.now();
     }
 
-    update(playerPosition: { x: number, y: number }): void {
+    update(playerPosition: { x: number, y: number }, enemies: Enemy[]): void {
         if (this.getState() !== 'active') {
             return;
         }
@@ -95,13 +95,23 @@ export default class Enemy {
             return;
         }
 
+        let newX = this.x;
+        let newY = this.y;
+
         if (Math.abs(dx) > Math.abs(dy)) {
-            this.x += dx > 0 ? 1 : -1;
+            newX += dx > 0 ? 1 : -1;
             this.direction = dx > 0 ? 'east' : 'west';
         } else {
-            this.y += dy > 0 ? 1 : -1;
+            newY += dy > 0 ? 1 : -1;
             this.direction = dy > 0 ? 'south' : 'north';
         }
+
+        if (enemies.some((enemy) => enemy.getState() === 'active' && enemy.getPosition().x === newX && enemy.getPosition().y === newY)) {
+            return;
+        }
+
+        this.x = newX;
+        this.y = newY;
     }
 
     hit(): boolean {

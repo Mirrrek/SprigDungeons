@@ -166,12 +166,12 @@ export default class Level {
 
         if (Date.now() - this.lastEnemyMoveTime > 1000 / this.enemySpeed) {
             this.lastEnemyMoveTime = Date.now();
-            this.enemies.forEach((wave, i) => wave.forEach((enemy, j) => (this.type !== 'boss' || i !== 0 || j !== 0) && enemy.update(playerPosition)));
+            this.enemies.forEach((wave, i) => wave.forEach((enemy, j) => (this.type !== 'boss' || i !== 0 || j !== 0) && enemy.update(playerPosition, wave)));
         }
 
         if (this.type === 'boss' && Date.now() - this.lastBossMoveTime > 1000) {
             this.lastBossMoveTime = Date.now();
-            this.enemies[0][0].update(playerPosition);
+            this.enemies[0][0].update(playerPosition, []);
         }
 
         if (this.enemies[this.currentWave].some((enemy) => enemy.setPlayerProximity(Math.sqrt((enemy.getPosition().x - playerPosition.x) ** 2 + (enemy.getPosition().y - playerPosition.y) ** 2) <= 1))) {
