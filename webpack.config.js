@@ -1,3 +1,4 @@
+const TerserPlugin = require('terser-webpack-plugin');
 const path = require('path');
 
 module.exports = (env, argv) => {
@@ -22,6 +23,13 @@ module.exports = (env, argv) => {
             filename: 'sprig-dungeons.js',
             path: path.resolve(__dirname, 'dist'),
             clean: true
+        },
+        optimization: {
+            minimizer: [new TerserPlugin({
+                terserOptions: {
+                    compress: false
+                }
+            })]
         },
         watch: isDevelopment
     }
