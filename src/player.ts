@@ -56,6 +56,23 @@ export default class Player {
         addSprite(0, screenHeight - 1, getSprite(this.getActiveWeapon() === 'katana' ? 'ammo-0-0' : `ammo-${Math.floor(this.ammo[this.getActiveWeapon() as Exclude<ReturnType<typeof this.getActiveWeapon>, 'katana'>] / 10) as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9}-0`));
         addSprite(1, screenHeight - 1, getSprite(this.getActiveWeapon() === 'katana' ? 'ammo-0-1' : `ammo-${this.ammo[this.getActiveWeapon() as Exclude<ReturnType<typeof this.getActiveWeapon>, 'katana'>] % 10 as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9}-1`));
 
+        let powerUpOffset = 0;
+        if (this.ammo.shotgun > 0) {
+            addSprite(2 + powerUpOffset, screenHeight - 1, getSprite('loot-shotgun-icon'));
+            powerUpOffset++;
+        }
+        if (this.ammo.rifle > 0) {
+            addSprite(2 + powerUpOffset, screenHeight - 1, getSprite('loot-rifle-icon'));
+            powerUpOffset++;
+        }
+        if (this.ammo.handgun > 0) {
+            addSprite(2 + powerUpOffset, screenHeight - 1, getSprite('loot-handgun-icon'));
+            powerUpOffset++;
+        }
+        this.powerUps.filter((p, i) => this.powerUps.findIndex((i) => i.type === p.type) === i).forEach((powerUp, i) => {
+            addSprite(2 + powerUpOffset + i, screenHeight - 1, getSprite(`loot-${powerUp.type}-potion-icon`));
+        });
+
         if (this.dieTime !== null) {
             if (Date.now() - this.dieTime < 500) {
                 addSprite(this.x, this.y, getSprite('player-death-0'));
