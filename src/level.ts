@@ -51,7 +51,7 @@ export default class Level {
         this.alwaysDropWeapon = false;
     }
 
-    initialize(bossHealth: number, enemySpeed: number, alwaysDropWeapon: boolean): void {
+    initialize(bossHealth: number, enemySpeed: number, enemiesPerWave: number[], alwaysDropWeapon: boolean): void {
         if (this.state !== 'waiting') {
             return;
         }
@@ -127,9 +127,7 @@ export default class Level {
 
         switch (this.type) {
             case 'normal':
-                this.enemies.push(new Array(3 + Math.floor(this.getLevelsConquered() / 4)).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)], this.alwaysDropWeapon)));
-                this.enemies.push(new Array(5 + Math.floor(this.getLevelsConquered() / 4)).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)], this.alwaysDropWeapon)));
-                this.enemies.push(new Array(7 + Math.floor(this.getLevelsConquered() / 4)).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)], this.alwaysDropWeapon)));
+                this.enemies.push(...enemiesPerWave.map((n) => new Array(n).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)], this.alwaysDropWeapon))));
                 break;
             case 'boss':
                 this.enemies.push([new Enemy(Math.floor(screenWidth / 2), Math.floor(screenHeight / 2), this.previousLevel?.direction ?? 'north', this.alwaysDropWeapon, bossHealth)]);

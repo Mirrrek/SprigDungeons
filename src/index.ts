@@ -43,7 +43,7 @@ function init() {
         currentLevel = nextLevel;
         player.teleport(direction);
         if (currentLevel.getState() === 'waiting') {
-            currentLevel.initialize(calculateBossHealth(), calculateEnemySpeed(), gameSettings.difficulty === 'rampage');
+            currentLevel.initialize(calculateBossHealth(), calculateEnemySpeed(), calculateEnemiesPerWave(), gameSettings.difficulty === 'rampage');
         }
     }, () => {
         deathTime = Date.now();
@@ -56,7 +56,7 @@ function init() {
     });
 
     currentLevel = new Level(() => levelsConquered, () => levelsConquered++, null);
-    currentLevel.initialize(calculateBossHealth(), calculateEnemySpeed(), gameSettings.difficulty === 'rampage');
+    currentLevel.initialize(calculateBossHealth(), calculateEnemySpeed(), calculateEnemiesPerWave(), gameSettings.difficulty === 'rampage');
 
     musicPlayer = gameSettings.music ? play('theme-main', Infinity) : { end: () => { } };
 }
@@ -279,6 +279,35 @@ function calculateEnemySpeed(): number {
             return 2 + levelsConquered * 0.15;
         case 'impossible':
             return 3 + levelsConquered * 0.2;
+    }
+}
+
+function calculateEnemiesPerWave(): number[] {
+    switch (gameSettings.difficulty) {
+        case 'rampage':
+            return [
+                5 + levelsConquered,
+                7 + levelsConquered,
+                9 + levelsConquered
+            ]
+        case 'normal':
+            return [
+                Math.floor(3 + levelsConquered * 0.2),
+                Math.floor(5 + levelsConquered * 0.2),
+                Math.floor(7 + levelsConquered * 0.2)
+            ]
+        case 'hard':
+            return [
+                Math.floor(4 + levelsConquered * 0.2),
+                Math.floor(6 + levelsConquered * 0.2),
+                Math.floor(8 + levelsConquered * 0.2)
+            ]
+        case 'impossible':
+            return [
+                Math.floor(5 + levelsConquered * 0.4),
+                Math.floor(7 + levelsConquered * 0.4),
+                Math.floor(9 + levelsConquered * 0.4)
+            ]
     }
 }
 
