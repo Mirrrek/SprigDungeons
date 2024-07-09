@@ -93,28 +93,28 @@ export default class Level {
         switch (nextLevelDirection) {
             case 'north': {
                 this.northLevel = new Level(this.getLevelsConquered, this.onLevelConquered, { level: this, direction: 'south' });
-                if (Math.random() < 0.15) {
+                if (Math.random() < 0.25) {
                     this.eastLevel = new Level(this.getLevelsConquered, this.onLevelConquered, { level: this, direction: 'west' });
                 }
-                if (Math.random() < 0.15 && this.previousLevel?.direction !== 'south') {
+                if (Math.random() < 0.25 && this.previousLevel?.direction !== 'south') {
                     this.southLevel = new Level(this.getLevelsConquered, this.onLevelConquered, { level: this, direction: 'north' });
                 }
             } break;
             case 'east': {
                 this.eastLevel = new Level(this.getLevelsConquered, this.onLevelConquered, { level: this, direction: 'west' });
-                if (Math.random() < 0.15 && this.previousLevel?.direction !== 'north') {
+                if (Math.random() < 0.3 && this.previousLevel?.direction !== 'north') {
                     this.northLevel = new Level(this.getLevelsConquered, this.onLevelConquered, { level: this, direction: 'south' });
                 }
-                if (Math.random() < 0.15 && this.previousLevel?.direction !== 'south') {
+                if (Math.random() < 0.3 && this.previousLevel?.direction !== 'south') {
                     this.southLevel = new Level(this.getLevelsConquered, this.onLevelConquered, { level: this, direction: 'north' });
                 }
             } break;
             case 'south': {
                 this.southLevel = new Level(this.getLevelsConquered, this.onLevelConquered, { level: this, direction: 'north' });
-                if (Math.random() < 0.15 && this.previousLevel?.direction !== 'north') {
+                if (Math.random() < 0.3 && this.previousLevel?.direction !== 'north') {
                     this.northLevel = new Level(this.getLevelsConquered, this.onLevelConquered, { level: this, direction: 'south' });
                 }
-                if (Math.random() < 0.15) {
+                if (Math.random() < 0.3) {
                     this.eastLevel = new Level(this.getLevelsConquered, this.onLevelConquered, { level: this, direction: 'west' });
                 }
             } break;
