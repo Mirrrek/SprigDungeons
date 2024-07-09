@@ -27,7 +27,7 @@ export default class Enemy {
 
     private loot: Loot | null;
 
-    constructor(x: number, y: number, direction: Direction, bossHealth: number = -1) {
+    constructor(x: number, y: number, direction: Direction, alwaysDropWeapon: boolean = false, bossHealth: number = -1) {
         this.boss = bossHealth > 0;
         this.health = this.boss ? bossHealth : 1;
         this.x = x;
@@ -39,6 +39,10 @@ export default class Enemy {
 
         const randomLoot = loot[Math.floor(Math.random() * loot.length)];
         this.loot = (this.boss || Math.random() < randomLoot.chance * loot.length) ? randomLoot.name : null;
+
+        if (alwaysDropWeapon && this.loot === null) {
+            this.loot = (['handgun', 'rifle', 'shotgun'] as const)[Math.floor(Math.random() * 3)];
+        }
     }
 
     render(time: number): void {

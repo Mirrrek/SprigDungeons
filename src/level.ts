@@ -22,6 +22,7 @@ export default class Level {
     private currentWave: number;
     private newWaveTime: number;
     private lastBossWave: number;
+    private alwaysDropWeapon: boolean;
 
     private getLevelsConquered: () => number;
     private onLevelConquered: () => void;
@@ -47,14 +48,17 @@ export default class Level {
         this.currentWave = 0;
         this.newWaveTime = 0;
         this.lastBossWave = 0;
+        this.alwaysDropWeapon = false;
     }
 
-    initialize(bossHealth: number, enemySpeed: number): void {
+    initialize(bossHealth: number, enemySpeed: number, alwaysDropWeapon: boolean): void {
         if (this.state !== 'waiting') {
             return;
         }
 
         this.type = this.getLevelsConquered() % 4 === 3 ? 'boss' : 'normal';
+
+        this.alwaysDropWeapon = alwaysDropWeapon;
 
         this.enemySpeed = enemySpeed;
 
@@ -123,12 +127,12 @@ export default class Level {
 
         switch (this.type) {
             case 'normal':
-                this.enemies.push(new Array(3 + Math.floor(this.getLevelsConquered() / 4)).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)])));
-                this.enemies.push(new Array(5 + Math.floor(this.getLevelsConquered() / 4)).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)])));
-                this.enemies.push(new Array(7 + Math.floor(this.getLevelsConquered() / 4)).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)])));
+                this.enemies.push(new Array(3 + Math.floor(this.getLevelsConquered() / 4)).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)], this.alwaysDropWeapon)));
+                this.enemies.push(new Array(5 + Math.floor(this.getLevelsConquered() / 4)).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)], this.alwaysDropWeapon)));
+                this.enemies.push(new Array(7 + Math.floor(this.getLevelsConquered() / 4)).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)], this.alwaysDropWeapon)));
                 break;
             case 'boss':
-                this.enemies.push([new Enemy(Math.floor(screenWidth / 2), Math.floor(screenHeight / 2), this.previousLevel?.direction ?? 'north', bossHealth)]);
+                this.enemies.push([new Enemy(Math.floor(screenWidth / 2), Math.floor(screenHeight / 2), this.previousLevel?.direction ?? 'north', this.alwaysDropWeapon, bossHealth)]);
                 break;
         }
         this.state = 'active';
@@ -143,7 +147,7 @@ export default class Level {
 
         if (this.type === 'boss' && Date.now() - this.lastBossWave > 10000 && this.enemies[0][0].getState() !== 'dead') {
             this.lastBossWave = Date.now();
-            this.enemies[0].push(...new Array(3 + Math.floor(this.getLevelsConquered() / 4)).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)])));
+            this.enemies[0].push(...new Array(3 + Math.floor(this.getLevelsConquered() / 4)).fill(null).map(() => new Enemy(Math.floor(Math.random() * (screenWidth - 2) + 1), Math.floor(Math.random() * (screenHeight - 2) + 1), (['north', 'east', 'south', 'west'] as const)[Math.floor(Math.random() * 4)], this.alwaysDropWeapon)));
             this.enemies[0].forEach((enemy) => enemy.getState() === 'waiting' && enemy.spawn());
         }
 

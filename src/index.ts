@@ -5,7 +5,7 @@ import play, { setSfx } from '@/audio';
 import menu from '@/menu';
 
 let gameState: 'start-menu' | 'difficulty-menu' | 'game' | 'dead' | 'summary';
-let gameSettings: { difficulty: 'normal' | 'hard' | 'impossible', music: boolean, sfx: boolean };
+let gameSettings: { difficulty: 'rampage' | 'normal' | 'hard' | 'impossible', music: boolean, sfx: boolean };
 let startMenuOption: 'music' | 'sfx' | 'start';
 
 let levelsConquered: number;
@@ -43,7 +43,7 @@ function init() {
         currentLevel = nextLevel;
         player.teleport(direction);
         if (currentLevel.getState() === 'waiting') {
-            currentLevel.initialize(calculateBossHealth(), calculateEnemySpeed());
+            currentLevel.initialize(calculateBossHealth(), calculateEnemySpeed(), gameSettings.difficulty === 'rampage');
         }
     }, () => {
         deathTime = Date.now();
@@ -56,7 +56,7 @@ function init() {
     });
 
     currentLevel = new Level(() => levelsConquered, () => levelsConquered++, null);
-    currentLevel.initialize(calculateBossHealth(), calculateEnemySpeed());
+    currentLevel.initialize(calculateBossHealth(), calculateEnemySpeed(), gameSettings.difficulty === 'rampage');
 
     musicPlayer = gameSettings.music ? play('theme-main', Infinity) : { end: () => { } };
 }
@@ -145,12 +145,17 @@ function difficultyMenuLoop(time: number): void {
     currentLevel.render(time);
     menu([
         { text: 'select\ndifficulty\n\n', color: 'BLACK' },
-        { text: 'normal\n\n', color: 'RED', highlight: gameSettings.difficulty === 'normal' },
-        { text: 'hard\n\n', color: 'RED', highlight: gameSettings.difficulty === 'hard' },
-        { text: 'impossible', color: 'RED', highlight: gameSettings.difficulty === 'impossible' }
+        { text: 'rampage\n\n', color: 'DARK_GRAY', highlight: gameSettings.difficulty === 'rampage' },
+        { text: 'normal\n\n', color: 'DARK_GRAY', highlight: gameSettings.difficulty === 'normal' },
+        { text: 'hard\n\n', color: 'DARK_GRAY', highlight: gameSettings.difficulty === 'hard' },
+        { text: 'impossible', color: 'DARK_GRAY', highlight: gameSettings.difficulty === 'impossible' }
     ]);
     if (input.primary.up()) {
         switch (gameSettings.difficulty) {
+            case 'normal':
+                gameSettings.difficulty = 'rampage';
+                play('menu-move');
+                break;
             case 'hard':
                 gameSettings.difficulty = 'normal';
                 play('menu-move');
@@ -163,6 +168,10 @@ function difficultyMenuLoop(time: number): void {
     }
     if (input.primary.down()) {
         switch (gameSettings.difficulty) {
+            case 'rampage':
+                gameSettings.difficulty = 'normal';
+                play('menu-move');
+                break;
             case 'normal':
                 gameSettings.difficulty = 'hard';
                 play('menu-move');
@@ -249,6 +258,8 @@ function summaryLoop(time: number): void {
 
 function calculateBossHealth(): number {
     switch (gameSettings.difficulty) {
+        case 'rampage':
+            return Math.floor(25 + levelsConquered * 2.5);
         case 'normal':
             return Math.floor(4 + levelsConquered);
         case 'hard':
@@ -260,6 +271,8 @@ function calculateBossHealth(): number {
 
 function calculateEnemySpeed(): number {
     switch (gameSettings.difficulty) {
+        case 'rampage':
+            return 2.5 + levelsConquered * 0.25;
         case 'normal':
             return 1 + levelsConquered * 0.1;
         case 'hard':
