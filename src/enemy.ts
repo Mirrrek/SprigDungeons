@@ -131,7 +131,7 @@ export default class Enemy {
 
         if (this.proximityTime === null) {
             this.proximityTime = Date.now();
-        } else if (Date.now() - this.proximityTime > 500) {
+        } else if (Date.now() - this.proximityTime > (this.boss ? 1250 : 750)) {
             return true;
         }
 
