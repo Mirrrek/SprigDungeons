@@ -259,13 +259,13 @@ function summaryLoop(time: number): void {
 function calculateBossHealth(): number {
     switch (gameSettings.difficulty) {
         case 'rampage':
-            return Math.floor(25 + levelsConquered * 2.5);
+            return Math.floor(35 + levelsConquered * 3.5);
         case 'normal':
-            return Math.floor(4 + levelsConquered);
+            return Math.floor(15 + levelsConquered * 1.5);
         case 'hard':
-            return Math.floor(8 + levelsConquered * 1.25);
+            return Math.floor(20 + levelsConquered * 2);
         case 'impossible':
-            return Math.floor(12 + levelsConquered * 1.5);
+            return Math.floor(30 + levelsConquered * 2.5);
     }
 }
 
@@ -292,21 +292,21 @@ function calculateEnemiesPerWave(): number[] {
             ]
         case 'normal':
             return [
-                Math.floor(3 + levelsConquered * 0.2),
-                Math.floor(5 + levelsConquered * 0.2),
-                Math.floor(7 + levelsConquered * 0.2)
+                Math.floor(3 + levelsConquered * 0.25),
+                Math.floor(5 + levelsConquered * 0.25),
+                Math.floor(7 + levelsConquered * 0.25)
             ]
         case 'hard':
             return [
-                Math.floor(4 + levelsConquered * 0.2),
-                Math.floor(6 + levelsConquered * 0.2),
-                Math.floor(8 + levelsConquered * 0.2)
+                Math.floor(4 + levelsConquered * 0.25),
+                Math.floor(6 + levelsConquered * 0.25),
+                Math.floor(8 + levelsConquered * 0.25)
             ]
         case 'impossible':
             return [
-                Math.floor(5 + levelsConquered * 0.4),
-                Math.floor(7 + levelsConquered * 0.4),
-                Math.floor(9 + levelsConquered * 0.4)
+                Math.floor(5 + levelsConquered * 0.5),
+                Math.floor(7 + levelsConquered * 0.5),
+                Math.floor(9 + levelsConquered * 0.5)
             ]
     }
 }

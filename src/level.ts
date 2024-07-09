@@ -4,7 +4,7 @@ import Enemy from '@/enemy';
 import play from '@/audio';
 
 export default class Level {
-    private type: 'normal' | 'boss';
+    private type: 'normal' | 'boss' | 'loot';
     private state: 'waiting' | 'active' | 'conquered';
 
     private readonly previousLevel: { level: Level, direction: Exclude<Direction, 'east'> } | null;
@@ -22,6 +22,7 @@ export default class Level {
     private currentWave: number;
     private newWaveTime: number;
     private lastBossWave: number;
+    private chestOpen: boolean;
     private alwaysDropWeapon: boolean;
 
     private getLevelsConquered: () => number;
@@ -48,6 +49,7 @@ export default class Level {
         this.currentWave = 0;
         this.newWaveTime = 0;
         this.lastBossWave = 0;
+        this.chestOpen = false;
         this.alwaysDropWeapon = false;
     }
 
@@ -56,7 +58,7 @@ export default class Level {
             return;
         }
 
-        this.type = this.getLevelsConquered() % 4 === 3 ? 'boss' : 'normal';
+        this.type = this.getLevelsConquered() % 4 === 3 ? this.previousLevel?.level.type === 'loot' ? 'boss' : 'loot' : 'normal';
 
         this.alwaysDropWeapon = alwaysDropWeapon;
 
@@ -132,13 +134,28 @@ export default class Level {
             case 'boss':
                 this.enemies.push([new Enemy(Math.floor(screenWidth / 2), Math.floor(screenHeight / 2), this.previousLevel?.direction ?? 'north', this.alwaysDropWeapon, bossHealth)]);
                 break;
+            case 'loot':
+                this.enemies.push([new Enemy(Math.floor(screenWidth / 2), Math.floor(screenHeight / 2), 'north', true, -1, true)]);
         }
+
+        if (this.type === 'loot') {
+            this.state = 'conquered';
+            return;
+        }
+
         this.state = 'active';
         this.enemies[0].forEach((enemy) => enemy.spawn());
         play('level-start');
     }
 
     update(playerPosition: { x: number, y: number }): boolean {
+        if (this.type === 'loot' && !this.chestOpen && Math.abs(playerPosition.x - Math.floor(screenWidth / 2)) <= 1 && Math.abs(playerPosition.y - Math.floor(screenHeight / 2)) <= 1) {
+            this.chestOpen = true;
+            this.enemies[0][0].spawn();
+            this.enemies[0][0].hit();
+            return false;
+        }
+
         if (this.state !== 'active') {
             return false;
         }
@@ -230,6 +247,10 @@ export default class Level {
 
         if (this.southLevel !== null) {
             this.renderDoor('south', this.state === 'conquered');
+        }
+
+        if (this.type === 'loot') {
+            addSprite(Math.floor(screenWidth / 2), Math.floor(screenHeight / 2), getSprite(this.chestOpen ? 'chest-open' : 'chest-closed'));
         }
 
         this.enemies.forEach((wave) => wave.forEach((enemy) => enemy.render(time)));

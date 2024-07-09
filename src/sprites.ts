@@ -1399,6 +1399,44 @@ L..222...2......
 ................
 ................`
     },
+    {
+        name: 'chest-closed', bitmap: `
+................
+................
+................
+................
+................
+................
+..222222222222..
+.2CCCCLCCCCLC22.
+.2CLCCCCCLCC2C2.
+2CCCC22CCCCC2C22
+2CLCCCCLCCC2C2C2
+2222222222222CL2
+2CCLCCCCCLC2CCC2
+2CCCCCLCCCC2CLC2
+2CLCCCCCCCC2C22.
+2222222222222...`
+    },
+    {
+        name: 'chest-open', bitmap: `
+................
+................
+................
+.2222222222222..
+2CCCCCCCLCCC2C2.
+2CCLCCCCCCC2CL2.
+222222222222CCC2
+.2LLLLLLLLLL22C2
+..2LLLLLLLLLLL22
+..22222222222222
+.2LLLLLLLLLLL2C2
+2222222222222CL2
+2CCLCCCCCLC2CCC2
+2CCCCCLCCCC2CLC2
+2CLCCCCCCCC2C22.
+2222222222222...`
+    },
     ...generateYMirrorSprites('boss-0-0', `
 ................
 ................

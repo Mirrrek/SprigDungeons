@@ -15,6 +15,7 @@ export type Loot = typeof loot[number]['name'];
 
 export default class Enemy {
     private boss: boolean;
+    private invisible: boolean;
 
     private x: number;
     private y: number;
@@ -27,8 +28,9 @@ export default class Enemy {
 
     private loot: Loot | null;
 
-    constructor(x: number, y: number, direction: Direction, alwaysDropWeapon: boolean = false, bossHealth: number = -1) {
+    constructor(x: number, y: number, direction: Direction, alwaysDropWeapon: boolean = false, bossHealth: number = -1, invisible: boolean = false) {
         this.boss = bossHealth > 0;
+        this.invisible = invisible;
         this.health = this.boss ? bossHealth : 1;
         this.x = x;
         this.y = y;
@@ -47,6 +49,14 @@ export default class Enemy {
 
     render(time: number): void {
         if (this.getState() === 'waiting') {
+            return;
+        }
+
+        if (this.invisible) {
+            if (this.dieTime !== null && this.loot !== null) {
+                const step = Math.floor(time / 500) % 2 === 0 ? '0' : '1';
+                addSprite(this.x, this.y, getSprite(`loot-${this.loot}-${step}`));
+            }
             return;
         }
 
